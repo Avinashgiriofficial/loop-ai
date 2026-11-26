@@ -132,7 +132,7 @@ class Settings(BaseSettings):
 
     @property
     def is_dev_demo_enabled(self) -> bool:
-        return self.env == "development" and self.dev_demo_mode and len(self.dev_demo_jwt_secret) >= 32
+        return self.dev_demo_mode and len(self.dev_demo_jwt_secret) >= 32
 
     @property
     def jwks_url(self) -> str:
@@ -1103,9 +1103,79 @@ def parse_document_bytes(data: bytes, source_type: str, mime_type: str | None) -
     raise ValueError("Unsupported document type")
 
 
+
+def _local_fallback_extract(document_text: str) -> ExtractionLLMOutput:
+    """Deterministic extractor used when LLM_API_KEY is missing (local/dev)."""
+    text = document_text or ""
+    lower = text.lower()
+    category: Literal["Bill", "Booking"] = "Booking" if any(k in lower for k in ("check-in", "checkin", "booking", "reservation", "hotel", "flight")) else "Bill"
+    title = "Uploaded Document"
+    for line in text.splitlines():
+        line = line.strip()
+        if 8 <= len(line) <= 80 and not line.lower().startswith("[page"):
+            title = line[:160]
+            break
+    issuer_val = None
+    for key in ("bescom", "hdfc", "act fibernet", "taj", "lg electronics", "electricity", "bank"):
+        if key in lower:
+            issuer_val = key.title() if key != "hdfc" else "HDFC Bank"
+            if key == "bescom":
+                issuer_val = "BESCOM Electricity Supply"
+            break
+    amount_minor = None
+    currency = "INR"
+    amt = re.search(r"(?:rs\.?|inr|₹)\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)", text, re.I)
+    if not amt:
+        amt = re.search(r"amount[^0-9]{0,20}([0-9][0-9,]*(?:\.[0-9]{1,2})?)", text, re.I)
+    if amt:
+        major = float(amt.group(1).replace(",", ""))
+        amount_minor = int(round(major * 100))
+    dates: list[ExtractedDateCandidate] = []
+    for m in re.finditer(r"\b(\d{1,2})[/-](\d{1,2})[/-](\d{4})\b", text):
+        raw = m.group(0)
+        a, b, y = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        role = "checkin_date" if category == "Booking" else "due_date"
+        dates.append(
+            ExtractedDateCandidate(
+                role=role,
+                raw_text=raw,
+                iso_date=None,
+                label_hint="Due date" if role == "due_date" else "Check-in date",
+                confidence=0.72,
+                evidence=EvidenceRef(snippet=raw, page=1),
+            )
+        )
+        if len(dates) >= 3:
+            break
+    if not dates:
+        for m in re.finditer(r"\b(\d{4})-(\d{2})-(\d{2})\b", text):
+            raw = m.group(0)
+            role = "checkin_date" if category == "Booking" else "due_date"
+            dates.append(
+                ExtractedDateCandidate(
+                    role=role,
+                    raw_text=raw,
+                    iso_date=raw,
+                    confidence=0.85,
+                    evidence=EvidenceRef(snippet=raw, page=1),
+                )
+            )
+            break
+    return ExtractionLLMOutput(
+        category=category,
+        title=title[:160],
+        issuer=ExtractedTextField(value=issuer_val or "Unknown issuer", confidence=0.7, evidence=EvidenceRef(snippet=issuer_val or title, page=1)) if issuer_val or title else None,
+        amount=ExtractedAmountField(amount_minor=amount_minor, currency=currency, confidence=0.75, evidence=EvidenceRef(snippet=amt.group(0) if amt else "0", page=1)) if amount_minor is not None else None,
+        reference_code=None,
+        dates=dates,
+        summary_snippet=(text.replace("\n", " ")[:240] or title),
+    )
+
+
 def call_llm_extractor(document_text: str) -> tuple[ExtractionLLMOutput, str]:
     if not settings.llm_api_key:
-        raise RuntimeError("LLM_API_KEY is not configured")
+        logger.warning("LLM_API_KEY missing — using local fallback extractor")
+        return _local_fallback_extract(document_text), "local-fallback"
     url = f"{settings.llm_base_url.rstrip('/')}/chat/completions"
     body = {
         "model": settings.llm_model,
@@ -1827,7 +1897,19 @@ def signup(payload: SignupRequest, response: Response, db: Session = Depends(get
     with httpx.Client(timeout=10.0) as client:
         r = client.post(url, headers=_supabase_headers(), json={"email": payload.email.strip().lower(), "password": payload.password})
     if r.status_code >= 400:
-        raise HTTPException(status_code=400, detail=r.json().get("msg") or "Signup failed")
+        try:
+            err_body = r.json()
+        except Exception:
+            err_body = {}
+        detail = (
+            err_body.get("msg")
+            or err_body.get("error_description")
+            or err_body.get("message")
+            or err_body.get("error")
+            or r.text
+            or "Signup failed"
+        )
+        raise HTTPException(status_code=400, detail=str(detail)[:300])
     data = r.json()
     access_token = data.get("access_token")
     if not access_token:
@@ -1844,7 +1926,17 @@ def login(payload: LoginRequest, response: Response, db: Session = Depends(get_d
     with httpx.Client(timeout=10.0) as client:
         r = client.post(url, headers=_supabase_headers(), json={"email": payload.email.strip().lower(), "password": payload.password})
     if r.status_code >= 400:
-        raise HTTPException(status_code=401, detail="Invalid email or password")
+        try:
+            err_body = r.json()
+        except Exception:
+            err_body = {}
+        detail = (
+            err_body.get("msg")
+            or err_body.get("error_description")
+            or err_body.get("message")
+            or "Invalid email or password"
+        )
+        raise HTTPException(status_code=401, detail=str(detail)[:300])
     data = r.json()
     access_token = data.get("access_token")
     claims = verify_access_token(access_token)

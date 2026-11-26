@@ -265,8 +265,17 @@
         try { data = await res.text(); } catch (_) { data = null; }
       }
       if (!res.ok) {
-        const detail = (data && (data.detail || data.message || data.msg)) || res.statusText || 'Request failed';
-        const err = new Error(typeof detail === 'string' ? detail : JSON.stringify(detail));
+        let detail = (data && (data.detail || data.message || data.msg || data.error_description || data.error)) || res.statusText || 'Request failed';
+        if (Array.isArray(detail)) {
+          detail = detail.map(function (d) {
+            if (typeof d === 'string') return d;
+            if (d && d.msg) return (d.loc ? d.loc.join('.') + ': ' : '') + d.msg;
+            return JSON.stringify(d);
+          }).join('; ');
+        } else if (detail && typeof detail === 'object') {
+          detail = detail.msg || detail.message || JSON.stringify(detail);
+        }
+        const err = new Error(String(detail));
         err.status = res.status;
         err.data = data;
         throw err;
@@ -895,6 +904,7 @@
               <button type="button" id="google-auth-btn" class="w-full py-3 px-4 rounded-2xl text-sm btn-secondary flex items-center justify-center gap-3">
                 <span>Continue with Google</span>
               </button>
+              <p class="text-[11px] neo-muted text-center">Google works only after you enable the Google provider in Supabase Auth → Providers.</p>
 
               <div class="flex items-center gap-3 text-xs neo-muted">
                 <div class="h-[1px] flex-1" style="background-color: var(--panel-border);"></div>
