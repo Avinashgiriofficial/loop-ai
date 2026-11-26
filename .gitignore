@@ -1,0 +1,8 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+*.db
+loop_storage/
+test_loop_storage/
+node_modules/
