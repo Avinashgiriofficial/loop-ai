@@ -1,0 +1,3238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LOOP — Personal Archive &amp; Reminders</title>
+
+  <!-- Google Fonts: Cormorant Garamond (600/700) & Hanken Grotesk (400/500/600/700) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root {
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-sans: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+
+      /* Dark-first Neoclassical Navy & Antique Brass */
+      --bg-page: #0A1228;
+      --text-primary: #EDEFF5;
+      --text-muted: #9AA6C0;
+      --panel-bg: rgba(16, 27, 58, 0.88);
+      --panel-border: #26365F;
+      --subpanel-bg: rgba(10, 18, 40, 0.86);
+      --subpanel-border: #26365F;
+      --brass-accent: #D4AE5E;
+      --brass-soft: rgba(212, 174, 94, 0.14);
+      --brass-border: rgba(212, 174, 94, 0.44);
+      --verdigris: #6CCBB2;
+      --verdigris-soft: rgba(108, 203, 178, 0.14);
+      --input-bg: rgba(10, 18, 40, 0.94);
+      --input-border: #26365F;
+      --btn-primary-bg: #D4AE5E;
+      --btn-primary-hover: #E0BE74;
+      --btn-primary-text: #0A1228;
+      --btn-secondary-bg: rgba(16, 27, 58, 0.88);
+      --btn-secondary-text: #EDEFF5;
+      --brass-glow: rgba(212, 174, 94, 0.14);
+      --amber-card-bg: #271E12;
+      --amber-card-border: #D4AE5E;
+      --highlight-green-bg: rgba(22, 48, 43, 0.82);
+      --highlight-green-border: #6CCBB2;
+      --highlight-brass-bg: rgba(45, 34, 18, 0.9);
+      --highlight-brass-border: #D4AE5E;
+    }
+
+    html.light {
+      /* Light Marble & Antique Brass */
+      --bg-page: #ECEFF2;
+      --text-primary: #101B33;
+      --text-muted: #4E5B78;
+      --panel-bg: rgba(255, 255, 255, 0.84);
+      --panel-border: #CBD3E1;
+      --subpanel-bg: rgba(246, 248, 250, 0.94);
+      --subpanel-border: #CBD3E1;
+      --brass-accent: #A67C2E;
+      --brass-soft: rgba(166, 124, 46, 0.12);
+      --brass-border: rgba(166, 124, 46, 0.45);
+      --verdigris: #1E8A6E;
+      --verdigris-soft: rgba(30, 138, 110, 0.12);
+      --input-bg: rgba(255, 255, 255, 0.96);
+      --input-border: #CBD3E1;
+      --btn-primary-bg: #A67C2E;
+      --btn-primary-hover: #8E6822;
+      --btn-primary-text: #FFFFFF;
+      --btn-secondary-bg: rgba(255, 255, 255, 0.94);
+      --btn-secondary-text: #101B33;
+      --brass-glow: rgba(166, 124, 46, 0.10);
+      --amber-card-bg: #FDF6E7;
+      --amber-card-border: #A67C2E;
+      --highlight-green-bg: rgba(30, 138, 110, 0.11);
+      --highlight-green-border: #1E8A6E;
+      --highlight-brass-bg: #FDF6E7;
+      --highlight-brass-border: #A67C2E;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-sans);
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      transition: background-color 0.45s cubic-bezier(0.22, 1, 0.36, 1), color 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* Slow, smooth neoclassical page, tab, and step transitions */
+    @keyframes pageEnterSmooth {
+      0% {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes tabGlideSmooth {
+      0% {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes modalRevealSmooth {
+      0% {
+        opacity: 0;
+        transform: translateY(14px) scale(0.975);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .page-stage {
+      will-change: opacity, transform;
+      transition: opacity 0.34s cubic-bezier(0.22, 1, 0.36, 1), transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .page-stage.is-leaving {
+      opacity: 0;
+      transform: translateY(-10px);
+      pointer-events: none;
+    }
+
+    .page-enter {
+      animation: pageEnterSmooth 0.68s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .tab-enter {
+      animation: tabGlideSmooth 0.56s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .step-enter {
+      animation: tabGlideSmooth 0.52s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .modal-enter {
+      animation: modalRevealSmooth 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .font-serif-display {
+      font-family: var(--font-serif);
+    }
+
+    /* Fluted Neoclassical Column Stripes */
+    .fluted-surface {
+      background-image: repeating-linear-gradient(
+        90deg,
+        rgba(212, 174, 94, 0.035) 0px,
+        rgba(212, 174, 94, 0.035) 1px,
+        transparent 1px,
+        transparent 18px,
+        rgba(255, 255, 255, 0.018) 18px,
+        rgba(255, 255, 255, 0.018) 28px,
+        transparent 28px,
+        transparent 44px
+      );
+    }
+
+    html.light .fluted-surface {
+      background-image: repeating-linear-gradient(
+        90deg,
+        rgba(166, 124, 46, 0.045) 0px,
+        rgba(166, 124, 46, 0.045) 1px,
+        transparent 1px,
+        transparent 18px,
+        rgba(16, 27, 51, 0.025) 18px,
+        rgba(16, 27, 51, 0.025) 28px,
+        transparent 28px,
+        transparent 44px
+      );
+    }
+
+    .fluted-navy-sidebar {
+      background-color: #0A1228;
+      background-image: repeating-linear-gradient(
+        90deg,
+        rgba(212, 174, 94, 0.04) 0px,
+        rgba(212, 174, 94, 0.04) 1px,
+        transparent 1px,
+        transparent 18px,
+        rgba(255, 255, 255, 0.02) 18px,
+        rgba(255, 255, 255, 0.02) 28px,
+        transparent 28px,
+        transparent 44px
+      );
+    }
+
+    /* Frosted Glass Neoclassical Panels (16px radius) */
+    .neo-panel {
+      background-color: var(--panel-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+    }
+
+    .neo-subpanel {
+      background-color: var(--subpanel-bg);
+      border: 1px solid var(--subpanel-border);
+      border-radius: 12px;
+    }
+
+    .neo-muted {
+      color: var(--text-muted);
+    }
+
+    .neo-brass-text {
+      color: var(--brass-accent);
+    }
+
+    .neo-verdigris-text {
+      color: var(--verdigris);
+    }
+
+    .neoclassical-arch {
+      border-radius: 9999px 9999px 16px 16px;
+    }
+
+    .btn-primary {
+      background-color: var(--btn-primary-bg);
+      color: var(--btn-primary-text);
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.12s ease, opacity 0.15s ease;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background-color: var(--btn-primary-hover);
+    }
+    .btn-primary:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background-color: var(--btn-secondary-bg);
+      color: var(--btn-secondary-text);
+      border: 1px solid var(--input-border);
+      font-weight: 500;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+    }
+    .btn-secondary:hover {
+      border-color: var(--brass-accent);
+    }
+
+    .neo-input {
+      background-color: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--text-primary);
+    }
+    .neo-input::placeholder {
+      color: var(--text-muted);
+      opacity: 0.72;
+    }
+
+    /* Pricing cards warm brass glow on hover */
+    .pricing-card-glow {
+      border-color: var(--panel-border);
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .pricing-card-glow:hover {
+      border-color: var(--brass-accent) !important;
+      box-shadow: 0 0 32px rgba(212, 174, 94, 0.22);
+    }
+
+    .pricing-card-plus {
+      border-color: var(--brass-border);
+      box-shadow: 0 0 22px rgba(212, 174, 94, 0.10);
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .pricing-card-plus:hover {
+      border-color: var(--brass-accent) !important;
+      box-shadow: 0 0 36px rgba(212, 174, 94, 0.26);
+    }
+
+    @keyframes drawBrassRing {
+      from {
+        stroke-dashoffset: 805;
+        opacity: 0.45;
+      }
+      to {
+        stroke-dashoffset: 0;
+        opacity: 1;
+      }
+    }
+
+    .ring-draw-path {
+      stroke-dasharray: 805;
+      stroke-dashoffset: 0;
+      animation: drawBrassRing 1.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes scanSweep {
+      0% { top: 2%; opacity: 0.95; }
+      95% { top: 96%; opacity: 0.95; }
+      100% { top: 98%; opacity: 0; }
+    }
+
+    .scan-beam {
+      position: absolute;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      pointer-events: none;
+      animation: scanSweep 2.4s linear forwards;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+      .ring-draw-path, .scan-beam, .page-enter, .tab-enter, .step-enter, .modal-enter {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen fluted-surface">
+
+  <!-- ROOT CONTAINER RENDERED BY UNIFIED ROUTER -->
+  <div id="root-app" class="page-stage"></div>
+
+  <!-- CERTIFICATE MODAL ("Open original" / "Open source") -->
+  <div
+    id="certificate-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-title"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A1228]/70 backdrop-blur-xs"
+  >
+    <div id="certificate-modal-card" class="w-full max-w-xl neo-panel shadow-2xl overflow-hidden">
+      <div class="pt-2 px-2">
+        <div class="border-t-[4px] border-double" style="border-color: var(--brass-accent);"></div>
+      </div>
+      <div class="px-6 py-4 border-b flex items-center justify-between gap-3" style="border-color: var(--panel-border);">
+        <div>
+          <h2 id="modal-title" class="font-serif-display text-2xl font-bold"></h2>
+          <p id="modal-subtitle" class="text-xs mt-0.5 neo-muted"></p>
+        </div>
+        <button type="button" id="modal-close-top" aria-label="Close certificate preview" class="p-2 rounded-lg btn-secondary">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div id="modal-body" class="p-6 space-y-4 max-h-[70vh] overflow-y-auto"></div>
+      <div class="px-6 py-3.5 border-t flex items-center justify-between gap-3" style="border-color: var(--panel-border);">
+        <span id="modal-footer-note" class="text-xs neo-muted"></span>
+        <button type="button" id="modal-close-bottom" class="px-4 py-2 rounded-[10px] text-xs btn-primary">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION BANNER -->
+  <div
+    id="toast-banner"
+    role="status"
+    aria-live="polite"
+    class="hidden fixed bottom-5 right-5 z-50 flex items-center gap-2.5 px-4 py-3 rounded-[12px] bg-[#101B3A] border border-[#D4AE5E] text-[#EDEFF5] shadow-xl text-sm font-medium"
+  >
+    <svg class="w-4 h-4 text-[#6CCBB2] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+      <polyline points="22 4 12 14.01 9 11.01" />
+    </svg>
+    <span id="toast-message">Action completed</span>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // ----------------------------------------------------------------------
+      // SEED ARCHIVE RECORDS (Reference Date: Thursday, 26 Nov 2026)
+      // ----------------------------------------------------------------------
+      const INITIAL_RECORDS = [
+        {
+          id: 'rec-hdfc-regalia',
+          title: 'HDFC Regalia Credit Card',
+          issuer: 'HDFC Bank Cards Division',
+          amount: '₹42,850',
+          numericAmount: 42850,
+          dueDate: '2026-11-28',
+          dueDateDisplay: '28 Nov 2026',
+          daysFromToday: 2,
+          category: 'Bill',
+          status: 'Confirmed',
+          reminderTiming: '2 days before',
+          sourceType: 'PDF Statement',
+          savedAt: '21 Nov 2026',
+          docHeader: 'HDFC Bank Regalia — Monthly Card Statement',
+          docSubheader: 'Card ending •••• 4819 • Statement Cycle: 22 Oct – 21 Nov 2026',
+          referenceCode: 'STMT-2026-4819',
+          sections: [
+            { label: 'Issuing institution', text: 'HDFC Bank Ltd. — Credit Cards Division, Chennai' },
+            { label: 'Total amount due', text: '₹42,850.00 (Minimum due: ₹2,145.00)' },
+            { label: 'Payment due date', text: '28 Nov 2026 (2 days from today)' }
+          ],
+          snippet: 'HDFC Regalia Credit Card statement ending 4819 with total amount due ₹42,850 payable on 28 Nov 2026.'
+        },
+        {
+          id: 'rec-act-fibernet',
+          title: 'ACT Fibernet Annual Plan',
+          issuer: 'ACT Fibernet',
+          amount: '₹11,499',
+          numericAmount: 11499,
+          dueDate: '2026-12-02',
+          dueDateDisplay: '2 Dec 2026',
+          daysFromToday: 6,
+          category: 'Bill',
+          status: 'Confirmed',
+          reminderTiming: '3 days before',
+          sourceType: 'PDF Invoice',
+          savedAt: '18 Nov 2026',
+          docHeader: 'ACT Fibernet — Annual Broadband Renewal Invoice',
+          docSubheader: 'Account ID: 102948172 • Plan: ACT Storm 300 Mbps (12 Months)',
+          referenceCode: 'ACT-INV-77312',
+          sections: [
+            { label: 'Service provider', text: 'ACT Fibernet (Atria Convergence Technologies Ltd.)' },
+            { label: 'Annual renewal total', text: '₹11,499.00 (12-month prepaid bundle, GST inclusive)' },
+            { label: 'Renewal due date', text: '2 Dec 2026 (6 days from today)' }
+          ],
+          snippet: 'ACT Fibernet Annual Plan renewal for ACT Storm 300 Mbps (Account 102948172) for ₹11,499 due on 2 Dec 2026.'
+        },
+        {
+          id: 'rec-taj-goa',
+          title: 'Taj Fort Aguada Goa Check-in',
+          issuer: 'Taj Fort Aguada Resort & Spa, Goa',
+          amount: '₹38,400',
+          numericAmount: 38400,
+          dueDate: '2026-12-20',
+          dueDateDisplay: '20 Dec 2026',
+          daysFromToday: 24,
+          category: 'Booking',
+          status: 'Confirmed',
+          reminderTiming: '1 week before',
+          sourceType: 'PDF Voucher',
+          savedAt: '12 Nov 2026',
+          docHeader: 'Confirmed Resort Reservation Voucher',
+          docSubheader: 'Confirmation No: TAJ-AGUADA-9041 • Sinquerim, North Goa',
+          referenceCode: 'VCH-2026-GOA',
+          sections: [
+            { label: 'Property & guest details', text: 'Taj Fort Aguada Resort & Spa, Goa — Hermitage Villa (2 Adults, 3 Nights)' },
+            { label: 'Check-in date', text: '20 Dec 2026 • Check-in from 02:00 PM' },
+            { label: 'Total reservation value', text: '₹38,400.00 (Confirmed with breakfast & airport transfer)' }
+          ],
+          snippet: 'Taj Fort Aguada Goa Check-in on 20 Dec 2026 (Confirmation TAJ-AGUADA-9041) for 3 nights, total ₹38,400.'
+        },
+        {
+          id: 'rec-lg-warranty',
+          title: 'LG Double-Door Refrigerator Warranty',
+          issuer: 'LG Electronics India',
+          amount: '₹54,900',
+          numericAmount: 54900,
+          dueDate: '2027-08-14',
+          dueDateDisplay: '14 Aug 2027',
+          daysFromToday: 261,
+          category: 'Warranty',
+          status: 'Confirmed',
+          reminderTiming: '1 week before',
+          sourceType: 'Warranty Card JPG',
+          savedAt: '29 Oct 2026',
+          docHeader: 'LG Care+ Extended Warranty Certificate',
+          docSubheader: 'Model: GL-T372JDS3 (340L Double-Door) • Serial: #LG-884920',
+          referenceCode: 'WRN-LG-884920',
+          sections: [
+            { label: 'Manufacturer & coverage', text: 'LG Electronics India Pvt. Ltd. — Comprehensive Parts & Smart Inverter Compressor' },
+            { label: 'Covered appliance value', text: '₹54,900.00 (Zero deductible during active warranty term)' },
+            { label: 'Warranty expiration date', text: '14 Aug 2027 (261 days from today)' }
+          ],
+          snippet: 'LG Double-Door Refrigerator Warranty (Model GL-T372JDS3, covered value ₹54,900) from LG Electronics India expires on 14 Aug 2027.'
+        }
+      ];
+
+      const SAMPLE_BESCOM_BILL = {
+        id: 'scan-bescom-2026',
+        title: 'BESCOM Electricity Bill',
+        issuer: 'BESCOM Electricity Supply',
+        accountNumber: 'Account ID: 849201742',
+        billingPeriod: 'Billing Period: Nov 2026',
+        category: 'Bill',
+        amount: '₹3,420',
+        amountRaw: '₹3,420.00',
+        numericAmount: 3420,
+        reminderTiming: '3 days before',
+        sourceType: 'PDF Bill',
+        choices: [
+          {
+            id: 'choice-ddmm',
+            label: '12 Dec 2026 — DD/MM format',
+            dueDate: '2026-12-12',
+            dueDateDisplay: '12 Dec 2026',
+            daysFromToday: 16
+          },
+          {
+            id: 'choice-cutoff',
+            label: '11 Dec 2026 — Billing cycle cutoff',
+            dueDate: '2026-12-11',
+            dueDateDisplay: '11 Dec 2026',
+            daysFromToday: 15
+          }
+        ]
+      };
+
+      // ----------------------------------------------------------------------
+      // UNIFIED APPLICATION STATE (Landing -> Auth -> Permissions -> Dashboard)
+      // ----------------------------------------------------------------------
+      let savedLightMode = false;
+      try {
+        savedLightMode = localStorage.getItem('loop_theme') === 'light';
+      } catch (_e) {}
+
+      const state = {
+        // Route: 'landing' | 'login' | 'signup' | 'permissions' | 'app'
+        route: 'landing',
+        // Sub-view inside 'app': 'today' | 'add' | 'vault' | 'ask' | 'settings'
+        appTab: 'today',
+        lightMode: savedLightMode, // Dark-first (#0A1228) with Light marble toggle
+        animateNext: 'page', // 'page' | 'tab' | 'step' | null
+        mobileMenuOpen: false,
+
+        // Auth & Permissions state
+        backendAvailable: false,
+        googleOauthEnabled: true,
+        devDemoEnabled: true,
+        isAuthenticated: false,
+        userName: 'Aarav Sharma',
+        userEmail: '',
+        authEmailInput: '',
+        authPasswordInput: '',
+        authShowPassword: false,
+        authConsentChecked: false,
+        authSubmitting: false,
+        authNotice: '',
+        authErrors: {},
+        permissionsGranted: false,
+        permissions: {
+          documentAccess: true,
+          notifications: true,
+          microphone: false,
+          leadTime: '2 days before'
+        },
+
+        // Landing interactive widgets
+        landingAmbiguousChoice: null,
+        openFaqIndex: 0,
+        waitlistMessage: '',
+
+        // Dashboard Archive Store
+        records: [...INITIAL_RECORDS],
+        selectedRingItemId: INITIAL_RECORDS[0].id,
+        hasDrawnRingOnce: false,
+
+        // Add document & Live Scan state
+        addInputTab: 'file',
+        uploadError: '',
+        pastedText: '',
+        isRecording: false,
+        recordingSeconds: 0,
+        scanDoc: null,
+        isScanning: false,
+        scanStage: 0,
+        selectedChoiceId: null,
+        draftIssuer: '',
+        draftCategory: 'Bill',
+        draftAmount: '',
+        draftDueDate: '',
+        draftReminderTiming: '3 days before',
+
+        // Vault state
+        vaultSearch: '',
+        vaultFilter: 'All',
+
+        // Ask LOOP state
+        askQuery: '',
+        askResult: null,
+        typedAnswer: '',
+        typingComplete: false,
+
+        // Settings state
+        channels: {
+          emailDigest: true,
+          pushNotifications: true,
+          smsFallback: false
+        },
+        consents: {
+          localParsing: true,
+          patternInsights: true
+        },
+        confirmDelete: false
+      };
+
+      let scanTimers = [];
+      let typewriterTimer = null;
+      let recordingInterval = null;
+      let toastTimeout = null;
+
+      // ----------------------------------------------------------------------
+      // HASH ROUTER SYNC (Fixes direct URL / back-forward navigation)
+      // ----------------------------------------------------------------------
+      // ----------------------------------------------------------------------
+      // API & AUTH COMMUNICATION LAYER (FastAPI + Graceful Preview Fallback)
+      // ----------------------------------------------------------------------
+      function getCookie(name) {
+        const prefix = `${name}=`;
+        const parts = (document.cookie || '').split(';');
+        for (let i = 0; i < parts.length; i++) {
+          const item = parts[i].trim();
+          if (item.startsWith(prefix)) {
+            return decodeURIComponent(item.slice(prefix.length));
+          }
+        }
+        return '';
+      }
+
+      async function apiFetch(path, options = {}) {
+        const method = (options.method || 'GET').toUpperCase();
+        const headers = { ...(options.headers || {}) };
+        if (options.body && !(options.body instanceof FormData) && !headers['Content-Type']) {
+          headers['Content-Type'] = 'application/json';
+        }
+        if (method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS') {
+          const csrf = getCookie('loop_csrf');
+          if (csrf) headers['X-CSRF-Token'] = csrf;
+        }
+        const res = await fetch(path, {
+          ...options,
+          method,
+          headers,
+          credentials: 'same-origin'
+        });
+        let data = null;
+        const ct = (res.headers.get('content-type') || '').toLowerCase();
+        if (ct.includes('application/json')) {
+          try {
+            data = await res.json();
+          } catch (_e) {
+            data = null;
+          }
+        }
+        return { ok: res.ok, status: res.status, data };
+      }
+
+      function loadPreviewAccounts() {
+        try {
+          const raw = localStorage.getItem('loop_preview_accounts');
+          const parsed = raw ? JSON.parse(raw) : {};
+          return parsed && typeof parsed === 'object' ? parsed : {};
+        } catch (_e) {
+          return {};
+        }
+      }
+
+      function savePreviewAccounts(map) {
+        try {
+          localStorage.setItem('loop_preview_accounts', JSON.stringify(map));
+        } catch (_e) {}
+      }
+
+      function loadPreviewSession() {
+        try {
+          const raw = localStorage.getItem('loop_preview_session');
+          return raw ? JSON.parse(raw) : null;
+        } catch (_e) {
+          return null;
+        }
+      }
+
+      function savePreviewSession(sess) {
+        try {
+          if (!sess) localStorage.removeItem('loop_preview_session');
+          else localStorage.setItem('loop_preview_session', JSON.stringify(sess));
+        } catch (_e) {}
+      }
+
+      function deriveDisplayName(email) {
+        const base = (email || '').split('@')[0].replace(/[._-]+/g, ' ').trim();
+        return (
+          base
+            .split(/\s+/)
+            .filter(Boolean)
+            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+            .join(' ') || 'LOOP Member'
+        );
+      }
+
+      function applyOAuthErrorFromHash() {
+        const raw = window.location.hash || '';
+        const qIndex = raw.indexOf('?');
+        if (qIndex === -1) return;
+        const params = new URLSearchParams(raw.slice(qIndex + 1));
+        const err = params.get('error');
+        if (!err) return;
+        const errorMap = {
+          google_not_enabled:
+            'Google sign-in is not enabled in Supabase yet. Enable Google under Supabase → Authentication → Providers, or sign in with email below.',
+          oauth_failed: 'Google sign-in was cancelled or failed. Please try again.',
+          oauth_state: 'Sign-in verification expired. Please try Google sign-in again.',
+          oauth_exchange: 'Could not complete Google sign-in with Supabase. Please try again.'
+        };
+        state.authErrors = { form: errorMap[err] || 'Unable to complete sign-in. Please try again.' };
+      }
+
+      async function hydrateSessionOnBoot() {
+        const isHttp = window.location.protocol === 'http:' || window.location.protocol === 'https:';
+        const isPreviewHost =
+          !isHttp ||
+          window.location.hostname.includes('usercontent.goog') ||
+          window.location.hostname === '' ||
+          window.location.origin === 'null';
+
+        if (!isPreviewHost) {
+          try {
+            const res = await apiFetch('/api/v1/auth/me', { method: 'GET' });
+            if (res.ok && res.data && typeof res.data.authenticated === 'boolean') {
+              state.backendAvailable = true;
+              state.googleOauthEnabled = res.data.google_oauth_enabled !== false;
+              state.devDemoEnabled = Boolean(res.data.dev_demo_enabled);
+              if (res.data.authenticated && res.data.user) {
+                state.isAuthenticated = true;
+                state.userEmail = res.data.user.email || '';
+                state.userName = res.data.user.name || deriveDisplayName(state.userEmail);
+                state.permissionsGranted = Boolean(res.data.user.permissions_granted);
+                if (res.data.settings && res.data.settings.permissions) {
+                  const p = res.data.settings.permissions;
+                  state.permissions.documentAccess = Boolean(p.document_access);
+                  state.permissions.notifications = Boolean(p.notifications);
+                  state.permissions.microphone = Boolean(p.microphone);
+                  const ld = Number(p.lead_days);
+                  state.permissions.leadTime =
+                    ld === 1 ? '1 day before' : ld === 7 ? '1 week before' : '2 days before';
+                }
+              }
+              syncFromHash();
+              applyOAuthErrorFromHash();
+              render();
+              return;
+            }
+          } catch (_e) {
+            state.backendAvailable = false;
+          }
+        }
+
+        // Standalone preview mode: restore saved local preview session if present
+        state.backendAvailable = false;
+        const localSess = loadPreviewSession();
+        if (localSess && localSess.email) {
+          state.isAuthenticated = true;
+          state.userEmail = localSess.email;
+          state.userName = localSess.name || deriveDisplayName(localSess.email);
+          state.permissionsGranted = Boolean(localSess.permissionsGranted);
+        }
+        syncFromHash();
+        applyOAuthErrorFromHash();
+        render();
+      }
+
+      let navTransitionTimer = null;
+
+      function transitionAndRender(kind, applyStateFn, scrollTop) {
+        const root = document.getElementById('root-app');
+        if (navTransitionTimer) {
+          clearTimeout(navTransitionTimer);
+          navTransitionTimer = null;
+        }
+
+        if (prefersReducedMotion || !root || !root.innerHTML.trim()) {
+          applyStateFn();
+          state.animateNext = null;
+          render();
+          if (scrollTop) window.scrollTo({ top: 0, behavior: 'auto' });
+          return;
+        }
+
+        const isFullPage = kind === 'page';
+        const targetEl = isFullPage ? root : (document.getElementById('dash-tab-stage') || root);
+        targetEl.classList.add('is-leaving');
+
+        navTransitionTimer = setTimeout(() => {
+          navTransitionTimer = null;
+          applyStateFn();
+          state.animateNext = kind;
+          render();
+          const refreshedRoot = document.getElementById('root-app');
+          if (refreshedRoot) refreshedRoot.classList.remove('is-leaving');
+          if (scrollTop) window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, isFullPage ? 300 : 210);
+      }
+
+      function navigateTo(targetRoute, targetAppTab) {
+        let resolvedRoute = targetRoute;
+        const resolvedTab = targetAppTab || state.appTab;
+
+        // Guard dashboard routes so user passes through Sign In & Permissions first
+        if (resolvedRoute === 'app') {
+          if (!state.isAuthenticated) {
+            resolvedRoute = 'login';
+          } else if (!state.permissionsGranted) {
+            resolvedRoute = 'permissions';
+          }
+        } else if (resolvedRoute === 'permissions' && !state.isAuthenticated) {
+          resolvedRoute = 'login';
+        }
+
+        const routeChanged = resolvedRoute !== state.route;
+        const tabChanged = resolvedRoute === 'app' && resolvedTab !== state.appTab;
+        if (!routeChanged && !tabChanged) {
+          state.mobileMenuOpen = false;
+          render();
+          return;
+        }
+
+        const transitionKind = routeChanged ? 'page' : 'tab';
+        transitionAndRender(
+          transitionKind,
+          () => {
+            state.route = resolvedRoute;
+            if (targetAppTab) state.appTab = targetAppTab;
+            state.mobileMenuOpen = false;
+
+            const hashMap = {
+              landing: '#/',
+              login: '#/login',
+              signup: '#/signup',
+              permissions: '#/permissions',
+              app: state.appTab === 'today' ? '#/app' : `#/app/${state.appTab}`
+            };
+            const nextHash = hashMap[resolvedRoute] || '#/';
+            if (window.location.hash !== nextHash) {
+              history.replaceState(null, '', nextHash);
+            }
+          },
+          true
+        );
+      }
+
+      function syncFromHash() {
+        const rawWithQuery = (window.location.hash || '#/').replace(/^#/, '');
+        const raw = rawWithQuery.split('?')[0];
+        if (raw === '/signup') {
+          state.route = 'signup';
+        } else if (raw === '/login') {
+          state.route = 'login';
+        } else if (raw === '/permissions') {
+          state.route = state.isAuthenticated ? 'permissions' : 'login';
+        } else if (raw.startsWith('/app')) {
+          const sub = raw.split('/')[2] || 'today';
+          if (['today', 'add', 'vault', 'ask', 'settings'].includes(sub)) {
+            state.appTab = sub;
+          }
+          if (!state.isAuthenticated) {
+            state.route = 'login';
+          } else if (!state.permissionsGranted) {
+            state.route = 'permissions';
+          } else {
+            state.route = 'app';
+          }
+        } else {
+          state.route = 'landing';
+        }
+      }
+
+      // ----------------------------------------------------------------------
+      // HELPERS
+      // ----------------------------------------------------------------------
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function showToast(message) {
+        const banner = document.getElementById('toast-banner');
+        const msgEl = document.getElementById('toast-message');
+        msgEl.textContent = message;
+        banner.classList.remove('hidden');
+        if (toastTimeout) clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+          banner.classList.add('hidden');
+        }, 3500);
+      }
+
+      function syncTheme() {
+        const html = document.documentElement;
+        if (state.lightMode) {
+          html.classList.add('light');
+        } else {
+          html.classList.remove('light');
+        }
+        try {
+          localStorage.setItem('loop_theme', state.lightMode ? 'light' : 'dark');
+        } catch (_e) {}
+      }
+
+      function logoSvgHtml(sizeClass = 'w-8 h-9') {
+        return `
+          <svg viewBox="0 0 36 42" fill="none" class="${sizeClass} shrink-0" aria-hidden="true">
+            <path d="M3 39V17C3 8.71573 9.71573 2 18 2C26.2843 2 33 8.71573 33 17V39H3Z" stroke="var(--brass-accent)" stroke-width="2" />
+            <path d="M9.5 39V17.5C9.5 12.8056 13.3056 9 18 9C22.6944 9 26.5 12.8056 26.5 17.5V39" stroke="var(--brass-accent)" stroke-width="1.35" stroke-opacity="0.85" />
+            <circle cx="18" cy="17.5" r="2" fill="var(--brass-accent)" />
+          </svg>
+        `;
+      }
+
+      function getSortedRecords() {
+        return [...state.records].sort((a, b) => a.daysFromToday - b.daysFromToday);
+      }
+
+      function getCategoryBadgeHtml(category) {
+        if (category === 'Bill') {
+          return `<span class="text-xs font-medium px-2.5 py-0.5 rounded-full border" style="background-color: var(--brass-soft); color: var(--brass-accent); border-color: var(--brass-border);">${escapeHtml(category)}</span>`;
+        }
+        if (category === 'Booking') {
+          return `<span class="text-xs font-medium px-2.5 py-0.5 rounded-full border" style="background-color: rgba(154,166,192,0.12); color: var(--text-primary); border-color: var(--panel-border);">${escapeHtml(category)}</span>`;
+        }
+        return `<span class="text-xs font-medium px-2.5 py-0.5 rounded-full border" style="background-color: var(--verdigris-soft); color: var(--verdigris); border-color: var(--highlight-green-border);">${escapeHtml(category)}</span>`;
+      }
+
+      function calculateDaysFromRefToday(isoDate) {
+        const ref = new Date(2026, 10, 26); // Thu 26 Nov 2026
+        const parts = isoDate.split('-').map(Number);
+        if (parts.length !== 3 || parts.some(isNaN)) return 12;
+        const target = new Date(parts[0], parts[1] - 1, parts[2]);
+        return Math.max(0, Math.round((target - ref) / (1000 * 60 * 60 * 24)));
+      }
+
+      function formatDisplayDate(isoDate) {
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const parts = isoDate.split('-').map(Number);
+        if (parts.length !== 3 || parts.some(isNaN)) return isoDate;
+        return `${parts[2]} ${months[parts[1] - 1]} ${parts[0]}`;
+      }
+
+      // ----------------------------------------------------------------------
+      // 1) LANDING PAGE VIEW
+      // ----------------------------------------------------------------------
+      function renderLandingPage() {
+        const faqs = [
+          {
+            q: 'What files and formats can I save to LOOP?',
+            a: 'Upload PDF statements, JPG or PNG photos of paper receipts and warranty cards, paste raw email or SMS text, or record a quick voice note describing an upcoming deadline.'
+          },
+          {
+            q: 'Is my personal financial and travel archive private?',
+            a: 'Yes. Your documents are encrypted in transit and at rest. LOOP contains no ads, never sells personal records, and never uses your documents to train AI models without explicit consent.'
+          },
+          {
+            q: 'What happens if LOOP reads a date or amount inaccurately?',
+            a: 'LOOP never schedules a reminder silently. Every extracted field appears beside its highlighted source snippet. If a date format like 03/12/2026 is ambiguous, LOOP asks you before scheduling.'
+          },
+          {
+            q: 'Which countries and currencies are supported?',
+            a: 'Built in India with native support for INR (₹), IST timezones, and Indian utility, banking, and travel formats—while also supporting international currencies and date formats.'
+          },
+          {
+            q: 'Can I export or permanently delete all my data?',
+            a: 'Anytime in one click from Settings. Download your entire structured archive as JSON or permanently erase every record immediately.'
+          },
+          {
+            q: 'Is LOOP free to use?',
+            a: 'Yes. The Free plan includes up to 25 active archived documents, the 30-day ring, and reminders during our public pilot. Plus, Pro, and Family tiers are coming soon.'
+          }
+        ];
+
+        const brass = state.lightMode ? '#A67C2E' : '#D4AE5E';
+        const verdigris = state.lightMode ? '#1E8A6E' : '#6CCBB2';
+        const borderSubtle = state.lightMode ? '#CBD3E1' : '#26365F';
+        const bgRing = state.lightMode ? '#FFFFFF' : '#0A1228';
+
+        let heroTicks = '';
+        for (let d = 0; d < 30; d++) {
+          const deg = -90 + d * 12;
+          const rad = (deg * Math.PI) / 180;
+          const major = d % 7 === 0;
+          const r1 = major ? 79 : 83;
+          const r2 = 90;
+          heroTicks += `<line x1="${(130 + r1 * Math.cos(rad)).toFixed(1)}" y1="${(130 + r1 * Math.sin(rad)).toFixed(1)}" x2="${(130 + r2 * Math.cos(rad)).toFixed(1)}" y2="${(130 + r2 * Math.sin(rad)).toFixed(1)}" stroke="${major ? brass : borderSubtle}" stroke-width="${major ? 1.8 : 1}" />`;
+        }
+
+        const heroMarkers = [
+          { day: 2, active: true },
+          { day: 6, active: false },
+          { day: 24, active: false }
+        ]
+          .map((m) => {
+            const rad = ((-90 + m.day * 12) * Math.PI) / 180;
+            const cx = (130 + 90 * Math.cos(rad)).toFixed(1);
+            const cy = (130 + 90 * Math.sin(rad)).toFixed(1);
+            return `
+              ${m.active ? `<circle cx="${cx}" cy="${cy}" r="11" fill="${brass}" fill-opacity="0.22" />` : ''}
+              <circle cx="${cx}" cy="${cy}" r="${m.active ? 6 : 4.5}" fill="${brass}" stroke="${bgRing}" stroke-width="1.5" />
+            `;
+          })
+          .join('');
+
+        return `
+          <div class="min-h-screen">
+            <!-- STICKY NAV -->
+            <header class="sticky top-0 z-40 backdrop-blur-md border-b" style="background-color: var(--panel-bg); border-color: var(--panel-border);">
+              <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+                <button type="button" data-go-route="landing" class="flex items-center gap-3 cursor-pointer text-left">
+                  ${logoSvgHtml('w-7 h-8')}
+                  <span class="font-serif-display font-bold text-xl tracking-[0.14em]">LOOP</span>
+                </button>
+
+                <nav class="hidden md:flex items-center gap-7 text-sm">
+                  <button type="button" data-scroll-id="how-it-works" class="neo-muted hover:opacity-80 cursor-pointer">How it works</button>
+                  <button type="button" data-scroll-id="privacy" class="neo-muted hover:opacity-80 cursor-pointer">Privacy</button>
+                  <button type="button" data-scroll-id="pricing" class="neo-muted hover:opacity-80 cursor-pointer">Pricing</button>
+                  <button type="button" data-scroll-id="faq" class="neo-muted hover:opacity-80 cursor-pointer">FAQ</button>
+                </nav>
+
+                <div class="hidden md:flex items-center gap-3">
+                  <button type="button" id="landing-theme-btn" aria-label="Toggle theme" class="p-2 rounded-xl btn-secondary">
+                    ${
+                      state.lightMode
+                        ? `<svg class="w-4 h-4 neo-brass-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`
+                        : `<svg class="w-4 h-4 neo-brass-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>`
+                    }
+                  </button>
+                  ${
+                    state.isAuthenticated
+                      ? `<button type="button" data-go-route="app" class="px-4 py-2 text-sm rounded-xl btn-primary">Open dashboard</button>`
+                      : `<button type="button" data-go-route="login" class="px-3.5 py-2 text-sm font-medium rounded-xl hover:opacity-85 cursor-pointer">Log in</button>
+                         <button type="button" data-go-route="signup" class="px-4 py-2 text-sm rounded-xl btn-primary">Start free</button>`
+                  }
+                </div>
+
+                <div class="flex md:hidden items-center gap-2">
+                  <button type="button" id="landing-theme-mobile-btn" class="p-2 rounded-xl btn-secondary" aria-label="Toggle theme">
+                    <span class="text-xs neo-brass-text">${state.lightMode ? 'Dark' : 'Light'}</span>
+                  </button>
+                  <button type="button" data-go-route="login" class="px-3 py-1.5 rounded-xl text-xs btn-primary">
+                    Sign in
+                  </button>
+                </div>
+              </div>
+            </header>
+
+            <!-- HERO SECTION -->
+            <section class="pt-12 pb-16 md:pt-20 md:pb-24 px-4 sm:px-6 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              <div class="lg:col-span-7 space-y-6">
+                <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border text-xs font-medium backdrop-blur-xs" style="background-color: var(--panel-bg); border-color: var(--brass-border); color: var(--brass-accent);">
+                  <span class="w-2 h-2 rounded-full shrink-0" style="background-color: var(--verdigris);"></span>
+                  <span style="color: var(--text-primary);">Personal archive &amp; user-approved reminders</span>
+                </div>
+
+                <h1 class="font-serif-display text-4xl sm:text-5xl lg:text-[58px] font-bold leading-[1.08] tracking-tight">
+                  Save the bill. LOOP finds the due date.
+                </h1>
+
+                <p class="text-base sm:text-lg leading-relaxed max-w-xl neo-muted">
+                  Upload what you already have. LOOP reads it, shows you what it found, and reminds you only after you approve.
+                </p>
+
+                <div class="flex flex-wrap items-center gap-3.5 pt-2">
+                  <button type="button" data-go-route="signup" class="px-6 py-3.5 rounded-2xl text-sm btn-primary inline-flex items-center gap-2">
+                    <span>Start free</span>
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  </button>
+
+                  <button type="button" data-go-route="login" class="px-6 py-3.5 rounded-2xl text-sm btn-secondary">
+                    Sign in to dashboard
+                  </button>
+
+                  <button type="button" data-scroll-id="how-it-works" class="px-3 py-3 text-sm font-medium underline underline-offset-4 neo-muted cursor-pointer">
+                    See how it works
+                  </button>
+                </div>
+              </div>
+
+              <!-- Right Animated Mini 30-Day Ring -->
+              <div class="lg:col-span-5 flex justify-center">
+                <div class="w-full max-w-[380px] p-6 neo-panel shadow-xl" style="border-color: var(--brass-border);">
+                  <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-medium neo-muted">Next 30 days · 3 on ring</span>
+                    <span class="text-xs px-2.5 py-0.5 rounded-full border" style="color: var(--verdigris); border-color: var(--verdigris); background-color: var(--verdigris-soft);">
+                      All confirmed
+                    </span>
+                  </div>
+
+                  <div class="relative flex items-center justify-center my-2">
+                    <svg viewBox="0 0 260 260" class="w-64 h-64">
+                      <circle cx="130" cy="130" r="102" fill="none" stroke="${borderSubtle}" stroke-width="1" />
+                      <circle cx="130" cy="130" r="90" fill="none" stroke="${brass}" stroke-width="2.2" />
+                      ${heroTicks}
+                      <circle cx="130" cy="40" r="5" fill="${verdigris}" />
+                      <text x="130" y="26" text-anchor="middle" fill="${verdigris}" font-size="10" font-weight="600">Today</text>
+                      ${heroMarkers}
+                    </svg>
+
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none px-8">
+                      <span class="font-serif-display text-5xl font-bold leading-none">2</span>
+                      <span class="text-xs mt-1 neo-muted">days left</span>
+                      <span class="font-serif-display text-sm font-semibold mt-2 leading-tight">HDFC Regalia Card</span>
+                      <span class="text-[11px] mt-0.5 neo-brass-text">28 Nov · ₹42,850</span>
+                    </div>
+                  </div>
+
+                  <div class="border-t pt-3 mt-2 flex items-center justify-between text-xs neo-muted" style="border-color: var(--brass-border);">
+                    <span class="flex items-center gap-1.5">
+                      <span class="w-2 h-2 rounded-full" style="background-color: var(--verdigris);"></span>
+                      Today (26 Nov)
+                    </span>
+                    <span class="flex items-center gap-1.5">
+                      <span class="w-2 h-2 rounded-full" style="background-color: var(--brass-accent);"></span>
+                      3 approved markers
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- TRUST STRIP -->
+            <section class="border-y py-5 px-4 sm:px-6" style="background-color: var(--panel-bg); border-color: var(--panel-border);">
+              <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div class="flex items-center gap-3 justify-center md:justify-start">
+                  <span class="w-2 h-2 rounded-full" style="background-color: var(--verdigris);"></span>
+                  <span>You approve every reminder</span>
+                </div>
+                <div class="flex items-center gap-3 justify-center">
+                  <span class="w-2 h-2 rounded-full" style="background-color: var(--brass-accent);"></span>
+                  <span>Delete everything anytime</span>
+                </div>
+                <div class="flex items-center gap-3 justify-center md:justify-end">
+                  <span class="w-2 h-2 rounded-full" style="background-color: var(--verdigris);"></span>
+                  <span>Never used to train models without your consent</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- HOW IT WORKS (4-STEP SEQUENCE) -->
+            <section id="how-it-works" class="py-16 md:py-24 px-4 sm:px-6 max-w-6xl mx-auto">
+              <div class="max-w-2xl mb-12">
+                <p class="text-sm font-medium mb-2 neo-brass-text">How it works</p>
+                <h2 class="font-serif-display text-3xl sm:text-4xl font-bold">
+                  From scattered documents to calm, verified clarity.
+                </h2>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="p-5 neo-panel space-y-4">
+                  <div class="flex items-center justify-between">
+                    <span class="font-serif-display text-2xl font-bold neo-brass-text">1</span>
+                    <span class="text-xs px-2.5 py-0.5 rounded-full border neo-muted" style="border-color: var(--panel-border);">PDF · Photo · Voice</span>
+                  </div>
+                  <div class="h-24 rounded-t-full border-t border-x mx-auto w-32 flex items-center justify-center text-xs neo-brass-text" style="border-color: var(--brass-border); background-color: var(--brass-soft);">
+                    Drop bill
+                  </div>
+                  <div>
+                    <h3 class="font-serif-display text-xl font-bold mb-1">Capture</h3>
+                    <p class="text-sm leading-relaxed neo-muted">Drop a PDF bill, snap a warranty slip, paste an email snippet, or speak a note.</p>
+                  </div>
+                </div>
+
+                <div class="p-5 neo-panel space-y-4" style="border-color: var(--brass-border);">
+                  <div class="flex items-center justify-between">
+                    <span class="font-serif-display text-2xl font-bold neo-brass-text">2</span>
+                    <span class="text-xs px-2.5 py-0.5 rounded-full" style="background-color: var(--brass-soft); color: var(--brass-accent);">Evidence-linked</span>
+                  </div>
+                  <div class="h-24 rounded-xl border p-2.5 relative overflow-hidden flex flex-col justify-between neo-subpanel">
+                    <div class="text-[10px] opacity-75">HDFC Regalia Statement</div>
+                    <div class="text-[10px] px-1.5 py-0.5 rounded border" style="border-color: var(--verdigris); background-color: var(--verdigris-soft); color: var(--verdigris);">Due: 28 Nov 2026</div>
+                    <div class="text-[10px] px-1.5 py-0.5 rounded border" style="border-color: var(--brass-accent); background-color: var(--brass-soft); color: var(--brass-accent);">Amount: ₹42,850</div>
+                    <div class="scan-beam"><div class="h-[2px] w-full" style="background-color: var(--brass-accent);"></div></div>
+                  </div>
+                  <div>
+                    <h3 class="font-serif-display text-xl font-bold mb-1">Understand</h3>
+                    <p class="text-sm leading-relaxed neo-muted">LOOP highlights the issuer, due date, and amount directly on your document for review.</p>
+                  </div>
+                </div>
+
+                <div class="p-5 neo-panel space-y-4">
+                  <div class="flex items-center justify-between">
+                    <span class="font-serif-display text-2xl font-bold neo-brass-text">3</span>
+                    <span class="text-xs px-2.5 py-0.5 rounded-full" style="background-color: var(--verdigris-soft); color: var(--verdigris);">Human-in-the-loop</span>
+                  </div>
+                  <div class="h-24 rounded-xl border p-3 flex flex-col justify-center gap-2 neo-subpanel">
+                    <div class="text-xs flex items-center justify-between"><span>Remind 2 days before</span><span class="neo-verdigris-text">✓</span></div>
+                    <div class="w-full py-1 rounded-lg text-center text-xs font-semibold" style="background-color: var(--btn-primary-bg); color: var(--btn-primary-text);">Approve reminder</div>
+                  </div>
+                  <div>
+                    <h3 class="font-serif-display text-xl font-bold mb-1">Approve</h3>
+                    <p class="text-sm leading-relaxed neo-muted">Nothing enters your schedule without your tap. Adjust lead time or edit any value first.</p>
+                  </div>
+                </div>
+
+                <div class="p-5 neo-panel space-y-4">
+                  <div class="flex items-center justify-between">
+                    <span class="font-serif-display text-2xl font-bold neo-brass-text">4</span>
+                    <span class="text-xs px-2.5 py-0.5 rounded-full border neo-muted" style="border-color: var(--panel-border);">30-day ring</span>
+                  </div>
+                  <div class="h-24 rounded-xl border p-3 flex items-center justify-center gap-3 neo-subpanel">
+                    <div class="w-11 h-11 rounded-full border-2 flex items-center justify-center font-serif-display font-bold text-lg" style="border-color: var(--verdigris); color: var(--verdigris);">2d</div>
+                    <div class="text-xs">
+                      <div class="font-semibold">Marked as paid</div>
+                      <div class="neo-muted">Archived in Vault</div>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 class="font-serif-display text-xl font-bold mb-1">Follow through</h3>
+                    <p class="text-sm leading-relaxed neo-muted">See the next 30 days on one calm ring, get timely alerts, and ask questions anytime.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- HONEST ABOUT UNCERTAINTY SECTION -->
+            <section class="py-12 px-4 sm:px-6 max-w-5xl mx-auto">
+              <div class="p-6 sm:p-10 neo-panel grid grid-cols-1 lg:grid-cols-12 gap-8 items-center" style="border-color: var(--brass-border);">
+                <div class="lg:col-span-6 space-y-4">
+                  <span class="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full" style="background-color: var(--brass-soft); color: var(--brass-accent);">
+                    Built-in humility
+                  </span>
+                  <h2 class="font-serif-display text-3xl sm:text-4xl font-bold">
+                    LOOP asks instead of guessing.
+                  </h2>
+                  <p class="text-sm sm:text-base leading-relaxed neo-muted">
+                    Documents mix DD/MM and MM/DD formats constantly. Whenever a date looks ambiguous, LOOP flags it in brass and lets you pick the right interpretation in one tap.
+                  </p>
+                </div>
+
+                <div class="lg:col-span-6">
+                  <div class="p-5 space-y-4 neo-subpanel">
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="text-xs neo-muted">Detected text: <strong>"Due: 03/12/2026"</strong></span>
+                      <span class="text-xs px-2.5 py-0.5 rounded-full" style="background-color: var(--brass-soft); color: var(--brass-accent);">Needs confirmation</span>
+                    </div>
+                    <p class="text-sm">Which date did this document mean?</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <button type="button" data-ambiguous-pick="dec" class="p-3.5 rounded-xl border text-left cursor-pointer" style="border-color: ${state.landingAmbiguousChoice === 'dec' ? 'var(--verdigris)' : 'var(--panel-border)'}; background-color: ${state.landingAmbiguousChoice === 'dec' ? 'var(--verdigris-soft)' : 'var(--panel-bg)'};">
+                        <div class="font-serif-display text-lg font-bold">3 Dec 2026</div>
+                        <div class="text-xs mt-0.5 neo-muted">DD/MM/YYYY (Indian standard)</div>
+                      </button>
+                      <button type="button" data-ambiguous-pick="mar" class="p-3.5 rounded-xl border text-left cursor-pointer" style="border-color: ${state.landingAmbiguousChoice === 'mar' ? 'var(--verdigris)' : 'var(--panel-border)'}; background-color: ${state.landingAmbiguousChoice === 'mar' ? 'var(--verdigris-soft)' : 'var(--panel-bg)'};">
+                        <div class="font-serif-display text-lg font-bold">12 Mar 2026</div>
+                        <div class="text-xs mt-0.5 neo-muted">MM/DD/YYYY (US format)</div>
+                      </button>
+                    </div>
+                    ${
+                      state.landingAmbiguousChoice
+                        ? `<p class="text-xs neo-verdigris-text">Confirmed as ${state.landingAmbiguousChoice === 'dec' ? '3 Dec 2026' : '12 Mar 2026'}. Ready to schedule.</p>`
+                        : ''
+                    }
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- PRIVACY SECTION -->
+            <section id="privacy" class="py-16 px-4 sm:px-6 max-w-6xl mx-auto">
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div class="lg:col-span-5 space-y-4">
+                  <p class="text-sm font-medium neo-verdigris-text">Privacy architecture</p>
+                  <h2 class="font-serif-display text-3xl sm:text-4xl font-bold">
+                    Your household records belong strictly to you.
+                  </h2>
+                  <p class="text-sm sm:text-base leading-relaxed neo-muted">
+                    LOOP is designed like a private study—not an ad network. Your statements, warranties, and travel confirmations stay sealed under your explicit permissions.
+                  </p>
+                </div>
+
+                <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div class="p-5 neo-panel space-y-1.5">
+                    <h3 class="font-semibold text-base">Encrypted storage</h3>
+                    <p class="text-xs leading-relaxed neo-muted">TLS 1.3 in transit and AES-256 encryption at rest for every PDF, photo, and note.</p>
+                  </div>
+                  <div class="p-5 neo-panel space-y-1.5">
+                    <h3 class="font-semibold text-base">One-click export &amp; delete</h3>
+                    <p class="text-xs leading-relaxed neo-muted">Download your full archive in open JSON or permanently purge all records anytime.</p>
+                  </div>
+                  <div class="p-5 neo-panel space-y-1.5">
+                    <h3 class="font-semibold text-base">No ads, no data brokers</h3>
+                    <p class="text-xs leading-relaxed neo-muted">Transparent subscription plans—never profiling your personal spending.</p>
+                  </div>
+                  <div class="p-5 neo-panel space-y-1.5">
+                    <h3 class="font-semibold text-base">Zero silent AI training</h3>
+                    <p class="text-xs leading-relaxed neo-muted">Your personal documents are never used to train models without explicit consent.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- PRICING SECTION (Pilot Free + Coming Soon tiers with warm brass hover glow) -->
+            <section id="pricing" class="py-16 md:py-24 px-4 sm:px-6 max-w-6xl mx-auto">
+              <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12">
+                <div>
+                  <p class="text-sm font-medium mb-2 neo-brass-text">Plans &amp; pilot access</p>
+                  <h2 class="font-serif-display text-3xl sm:text-4xl font-bold">Start free during our pilot.</h2>
+                </div>
+                ${
+                  state.waitlistMessage
+                    ? `<div class="px-4 py-2 rounded-xl border text-xs font-medium neo-brass-text" style="background-color: var(--brass-soft); border-color: var(--brass-accent);">${escapeHtml(state.waitlistMessage)}</div>`
+                    : ''
+                }
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+                <!-- Free -->
+                <div class="p-6 neo-panel flex flex-col justify-between pricing-card-glow">
+                  <div>
+                    <div class="flex items-center justify-between">
+                      <h3 class="font-serif-display text-2xl font-bold">Free</h3>
+                      <span class="text-xs px-2.5 py-0.5 rounded-full border font-medium" style="border-color: var(--verdigris); background-color: var(--verdigris-soft); color: var(--verdigris);">Available now</span>
+                    </div>
+                    <p class="text-xs mt-1 neo-muted">For getting started</p>
+                    <div class="my-5">
+                      <span class="font-serif-display text-4xl font-bold">Free</span>
+                      <span class="text-xs ml-1.5 neo-muted">during public pilot</span>
+                    </div>
+                    <ul class="space-y-2.5 text-sm neo-muted">
+                      <li>✓ Up to 25 archived documents</li>
+                      <li>✓ 30-day interactive ring</li>
+                      <li>✓ In-app &amp; email reminders</li>
+                    </ul>
+                  </div>
+                  <button type="button" data-go-route="signup" class="mt-6 w-full py-2.5 rounded-xl text-sm btn-primary">
+                    Start free
+                  </button>
+                </div>
+
+                <!-- Plus -->
+                <div class="relative pt-4 flex flex-col">
+                  <div class="mx-auto w-36 h-7 rounded-t-full border-t border-x flex items-center justify-center text-[11px] font-semibold -mb-[1px] z-10 neo-brass-text" style="border-color: var(--brass-accent); background-color: var(--bg-page);">
+                    Most popular
+                  </div>
+                  <div class="p-6 neo-panel flex-1 flex flex-col justify-between pricing-card-plus">
+                    <div>
+                      <div class="flex items-center justify-between gap-2">
+                        <h3 class="font-serif-display text-2xl font-bold">Plus</h3>
+                        <span class="text-xs px-2.5 py-0.5 rounded-full border neo-brass-text" style="border-color: var(--brass-border);">Coming soon</span>
+                      </div>
+                      <p class="text-xs mt-1 neo-muted">Complete personal archive</p>
+                      <div class="my-5">
+                        <span class="font-serif-display text-3xl font-bold">Coming soon</span>
+                      </div>
+                      <ul class="space-y-2.5 text-sm neo-muted">
+                        <li>✓ Unlimited bills, bookings &amp; warranties</li>
+                        <li>✓ Voice note capture &amp; transcription</li>
+                        <li>✓ Unlimited Ask LOOP archive Q&amp;A</li>
+                        <li>✓ Schedule pattern insights</li>
+                      </ul>
+                    </div>
+                    <button type="button" data-waitlist-tier="LOOP Plus" class="mt-6 w-full py-2.5 rounded-xl border text-sm font-medium cursor-pointer neo-brass-text" style="border-color: var(--brass-border); background-color: var(--brass-soft);">
+                      Pilot waitlist soon
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Pro -->
+                <div class="p-6 neo-panel flex flex-col justify-between pricing-card-glow">
+                  <div>
+                    <div class="flex items-center justify-between gap-2">
+                      <h3 class="font-serif-display text-2xl font-bold">Pro</h3>
+                      <span class="text-xs px-2.5 py-0.5 rounded-full border neo-brass-text" style="border-color: var(--brass-border);">Coming soon</span>
+                    </div>
+                    <p class="text-xs mt-1 neo-muted">For consultants &amp; power users</p>
+                    <div class="my-5">
+                      <span class="font-serif-display text-3xl font-bold">Coming soon</span>
+                    </div>
+                    <ul class="space-y-2.5 text-sm neo-muted">
+                      <li>✓ Everything in Plus</li>
+                      <li>✓ Dedicated email forwarding inbox</li>
+                      <li>✓ GST &amp; tax-ready annual CSV/ZIP packs</li>
+                    </ul>
+                  </div>
+                  <button type="button" data-waitlist-tier="LOOP Pro" class="mt-6 w-full py-2.5 rounded-xl text-sm btn-secondary">
+                    Pilot waitlist soon
+                  </button>
+                </div>
+
+                <!-- Family -->
+                <div class="p-6 neo-panel flex flex-col justify-between pricing-card-glow">
+                  <div>
+                    <div class="flex items-center justify-between gap-2">
+                      <h3 class="font-serif-display text-2xl font-bold">Family</h3>
+                      <span class="text-xs px-2.5 py-0.5 rounded-full border neo-brass-text" style="border-color: var(--brass-border);">Coming soon</span>
+                    </div>
+                    <p class="text-xs mt-1 neo-muted">Shared household vault</p>
+                    <div class="my-5">
+                      <span class="font-serif-display text-3xl font-bold">Coming soon</span>
+                    </div>
+                    <ul class="space-y-2.5 text-sm neo-muted">
+                      <li>✓ Shared appliance warranties</li>
+                      <li>✓ Joint travel &amp; utility reminders</li>
+                      <li>✓ Private personal folders per member</li>
+                    </ul>
+                  </div>
+                  <button type="button" data-waitlist-tier="LOOP Family" class="mt-6 w-full py-2.5 rounded-xl text-sm btn-secondary">
+                    Pilot waitlist soon
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <!-- FAQ ACCORDION -->
+            <section id="faq" class="py-16 px-4 sm:px-6 max-w-4xl mx-auto">
+              <div class="mb-10">
+                <p class="text-sm font-medium mb-2 neo-brass-text">Questions &amp; answers</p>
+                <h2 class="font-serif-display text-3xl sm:text-4xl font-bold">Frequently asked questions</h2>
+              </div>
+              <div class="space-y-3">
+                ${faqs
+                  .map((item, idx) => {
+                    const isOpen = state.openFaqIndex === idx;
+                    return `
+                      <div class="neo-panel overflow-hidden" style="border-color: ${isOpen ? 'var(--brass-border)' : 'var(--panel-border)'};">
+                        <button type="button" data-faq-idx="${idx}" class="w-full px-6 py-4 text-left flex items-center justify-between gap-4 font-medium text-base cursor-pointer">
+                          <span>${escapeHtml(item.q)}</span>
+                          <span class="neo-brass-text text-sm">${isOpen ? '−' : '+'}</span>
+                        </button>
+                        ${
+                          isOpen
+                            ? `<div class="px-6 pb-5 text-sm leading-relaxed border-t pt-3 neo-muted" style="border-color: var(--panel-border);">${escapeHtml(item.a)}</div>`
+                            : ''
+                        }
+                      </div>
+                    `;
+                  })
+                  .join('')}
+              </div>
+            </section>
+
+            <!-- FOOTER -->
+            <footer class="border-t py-10 px-4 sm:px-6 text-sm neo-muted" style="border-color: var(--panel-border);">
+              <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div class="flex items-center gap-4">
+                  ${logoSvgHtml('w-6 h-7')}
+                  <span class="font-serif-display font-bold text-lg tracking-widest" style="color: var(--text-primary);">LOOP</span>
+                  <span class="text-xs px-2.5 py-1 rounded-full border neo-brass-text" style="border-color: var(--brass-border);">
+                    Public pilot · Built in India
+                  </span>
+                </div>
+                <div class="flex flex-wrap items-center justify-center gap-6 text-xs">
+                  <button type="button" data-go-route="login" class="hover:underline cursor-pointer">Log in</button>
+                  <button type="button" data-go-route="signup" class="hover:underline cursor-pointer">Start free</button>
+                  <button type="button" data-go-route="app" class="hover:underline cursor-pointer">Dashboard</button>
+                </div>
+              </div>
+            </footer>
+          </div>
+        `;
+      }
+
+      function bindLandingEvents() {
+        document.querySelectorAll('[data-go-route]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            navigateTo(btn.getAttribute('data-go-route'));
+          });
+        });
+
+        document.querySelectorAll('[data-scroll-id]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const el = document.getElementById(btn.getAttribute('data-scroll-id'));
+            if (el) el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+          });
+        });
+
+        const toggleThemeHandler = () => {
+          state.lightMode = !state.lightMode;
+          render();
+        };
+        const t1 = document.getElementById('landing-theme-btn');
+        const t2 = document.getElementById('landing-theme-mobile-btn');
+        if (t1) t1.addEventListener('click', toggleThemeHandler);
+        if (t2) t2.addEventListener('click', toggleThemeHandler);
+
+        document.querySelectorAll('[data-ambiguous-pick]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            state.landingAmbiguousChoice = btn.getAttribute('data-ambiguous-pick');
+            render();
+          });
+        });
+
+        document.querySelectorAll('[data-waitlist-tier]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            state.waitlistMessage = `You are on the early-access list for ${btn.getAttribute('data-waitlist-tier')}.`;
+            render();
+          });
+        });
+
+        document.querySelectorAll('[data-faq-idx]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const idx = Number(btn.getAttribute('data-faq-idx'));
+            state.openFaqIndex = state.openFaqIndex === idx ? null : idx;
+            render();
+          });
+        });
+      }
+
+      // ----------------------------------------------------------------------
+      // 2) SIGN IN & SIGN UP PAGE (/login, /signup)
+      // ----------------------------------------------------------------------
+      function renderAuthPage(mode) {
+        const isSignup = mode === 'signup';
+        const errs = state.authErrors || {};
+
+        return `
+          <div class="min-h-screen grid grid-cols-1 lg:grid-cols-12">
+            <!-- Left Side: Neoclassical Brass Arch Illustration + Quote -->
+            <div class="hidden lg:flex lg:col-span-5 border-r p-12 flex-col justify-between fluted-navy-sidebar text-[#EDEFF5]" style="border-color: var(--brass-border);">
+              <button type="button" data-go-route="landing" class="flex items-center gap-3 cursor-pointer text-left">
+                ${logoSvgHtml('w-8 h-9')}
+                <div>
+                  <span class="font-serif-display font-bold text-2xl tracking-[0.14em] block leading-none">LOOP</span>
+                  <span class="text-xs text-[#9AA6C0] block mt-1">Personal archive &amp; reminders</span>
+                </div>
+              </button>
+
+              <div class="my-auto py-8 flex flex-col items-center">
+                <div class="w-72 h-96 rounded-t-full border-2 p-4 flex flex-col justify-end" style="border-color: #D4AE5E; background-color: rgba(212,174,94,0.10);">
+                  <div class="w-full h-full rounded-t-full border p-6 flex flex-col justify-center text-center" style="border-color: rgba(212,174,94,0.4);">
+                    <p class="font-serif-display italic text-2xl leading-snug mb-4">
+                      “Order is the shape upon which beauty depends—and calm follows when nothing is left to memory alone.”
+                    </p>
+                    <div class="border-t pt-3 text-xs text-[#D4AE5E]" style="border-color: rgba(212,174,94,0.35);">
+                      LOOP Archive Room · Est. 2026
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <p class="text-xs text-[#9AA6C0]">Encrypted personal archive · Built in India</p>
+            </div>
+
+            <!-- Right Side: Auth Form -->
+            <div class="lg:col-span-7 flex items-center justify-center p-6 sm:p-12">
+              <div class="w-full max-w-md space-y-7">
+                <div class="flex items-center justify-between lg:hidden">
+                  <button type="button" data-go-route="landing" class="flex items-center gap-2.5 cursor-pointer">
+                    ${logoSvgHtml('w-7 h-8')}
+                    <span class="font-serif-display font-bold text-xl tracking-[0.14em]">LOOP</span>
+                  </button>
+                  <button type="button" data-go-route="landing" class="text-xs neo-muted underline">Back to home</button>
+                </div>
+
+                <div>
+                  ${
+                    isSignup
+                      ? `<div class="inline-flex items-center gap-2 text-xs font-medium px-2.5 py-1 rounded-full mb-3" style="background-color: var(--brass-soft); color: var(--brass-accent);">
+                    Step 1 of 2 · Account verification
+                  </div>`
+                      : ''
+                  }
+                  <h1 class="font-serif-display text-3xl sm:text-4xl font-bold">
+                    ${isSignup ? 'Create your personal archive' : 'Sign in to LOOP'}
+                  </h1>
+                  <p class="text-sm mt-2 neo-muted">
+                    ${
+                      isSignup
+                        ? 'Create an account to review archive permissions and enter your workspace.'
+                        : 'Welcome back. Sign in to open your 30-day archive dashboard.'
+                    }
+                  </p>
+                </div>
+
+                ${
+                  errs.form
+                    ? `<div role="alert" class="p-3.5 rounded-xl border text-xs leading-relaxed" style="background-color: var(--amber-card-bg); border-color: var(--amber-card-border); color: var(--text-primary);">${escapeHtml(errs.form)}</div>`
+                    : ''
+                }
+                ${
+                  state.authNotice
+                    ? `<div role="status" class="p-3.5 rounded-xl border text-xs leading-relaxed" style="background-color: var(--verdigris-soft); border-color: var(--verdigris); color: var(--text-primary);">${escapeHtml(state.authNotice)}</div>`
+                    : ''
+                }
+
+                <button
+                  type="button"
+                  id="google-auth-btn"
+                  ${state.authSubmitting ? 'disabled' : ''}
+                  class="w-full py-3 px-4 rounded-2xl text-sm btn-secondary flex items-center justify-center gap-3 disabled:opacity-50"
+                >
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.8C6.2 7.2 8.9 5 12 5z" />
+                    <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.6l3.7 2.9c2.2-2 3.7-5 3.7-8.7z" />
+                    <path fill="#FBBC05" d="M5.3 14.8c-.2-.8-.4-1.6-.4-2.5s.2-1.7.4-2.5L1.6 7C.6 9 0 11.2 0 13.5s.6 4.5 1.6 6.5l3.7-2.9z" />
+                    <path fill="#34A853" d="M12 24c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.1-6.7-5l-3.7 2.9C3.5 21.1 7.4 24 12 24z" />
+                  </svg>
+                  <span>${state.authSubmitting ? 'Please wait…' : 'Continue with Google'}</span>
+                </button>
+
+                <div class="flex items-center gap-3 text-xs neo-muted">
+                  <div class="h-[1px] flex-1" style="background-color: var(--panel-border);"></div>
+                  <span>or continue with email</span>
+                  <div class="h-[1px] flex-1" style="background-color: var(--panel-border);"></div>
+                </div>
+
+                <form id="auth-form" novalidate class="space-y-4">
+                  <div>
+                    <label for="auth-email" class="block text-sm font-medium mb-1.5">Email address</label>
+                    <input
+                      id="auth-email"
+                      name="email"
+                      type="email"
+                      autocomplete="email"
+                      value="${escapeHtml(state.authEmailInput)}"
+                      placeholder="aarav.sharma@domain.in"
+                      ${state.authSubmitting ? 'disabled' : ''}
+                      class="w-full px-4 py-3 rounded-xl text-sm neo-input focus:outline-none"
+                    />
+                    ${
+                      errs.email
+                        ? `<p class="text-xs mt-1.5 neo-brass-text">${escapeHtml(errs.email)}</p>`
+                        : ''
+                    }
+                  </div>
+
+                  <div>
+                    <label for="auth-password" class="block text-sm font-medium mb-1.5">Password</label>
+                    <div class="relative">
+                      <input
+                        id="auth-password"
+                        name="password"
+                        type="${state.authShowPassword ? 'text' : 'password'}"
+                        autocomplete="${isSignup ? 'new-password' : 'current-password'}"
+                        value="${escapeHtml(state.authPasswordInput)}"
+                        placeholder="At least 6 characters"
+                        ${state.authSubmitting ? 'disabled' : ''}
+                        class="w-full px-4 py-3 pr-16 rounded-xl text-sm neo-input focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        id="toggle-password-vis-btn"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium neo-muted hover:opacity-80 cursor-pointer"
+                      >
+                        ${state.authShowPassword ? 'Hide' : 'Show'}
+                      </button>
+                    </div>
+                    ${
+                      errs.password
+                        ? `<p class="text-xs mt-1.5 neo-brass-text">${escapeHtml(errs.password)}</p>`
+                        : ''
+                    }
+                  </div>
+
+                  ${
+                    isSignup
+                      ? `
+                        <div>
+                          <label class="flex items-start gap-2.5 text-xs cursor-pointer neo-muted">
+                            <input id="auth-consent" type="checkbox" ${state.authConsentChecked ? 'checked' : ''} ${state.authSubmitting ? 'disabled' : ''} class="mt-0.5 rounded" />
+                            <span>
+                              I agree to LOOP’s Privacy Policy. My documents are encrypted and never used to train AI models without my explicit consent.
+                            </span>
+                          </label>
+                          ${
+                            errs.consent
+                              ? `<p class="text-xs mt-1.5 neo-brass-text">${escapeHtml(errs.consent)}</p>`
+                              : ''
+                          }
+                        </div>
+                      `
+                      : ''
+                  }
+
+                  <button type="submit" ${state.authSubmitting ? 'disabled' : ''} class="w-full py-3.5 rounded-2xl text-sm btn-primary">
+                    ${
+                      state.authSubmitting
+                        ? isSignup
+                          ? 'Creating account…'
+                          : 'Signing in…'
+                        : isSignup
+                          ? 'Continue to permissions'
+                          : 'Sign in'
+                    }
+                  </button>
+                </form>
+
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-2 text-sm neo-muted pt-1">
+                  ${
+                    isSignup
+                      ? `<span>Already have an account? <button type="button" data-go-route="login" class="font-medium underline neo-brass-text cursor-pointer">Log in</button></span>`
+                      : `<span>New to LOOP? <button type="button" data-go-route="signup" class="font-medium underline neo-brass-text cursor-pointer">Create free account</button></span>`
+                  }
+                  ${
+                    !state.backendAvailable || state.devDemoEnabled
+                      ? `<button type="button" id="quick-demo-signin-btn" ${state.authSubmitting ? 'disabled' : ''} class="text-xs underline neo-verdigris-text cursor-pointer">Instant demo sign in</button>`
+                      : ''
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function bindAuthEvents(mode) {
+        document.querySelectorAll('[data-go-route]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            state.authErrors = {};
+            state.authNotice = '';
+            state.authSubmitting = false;
+            navigateTo(btn.getAttribute('data-go-route'));
+          });
+        });
+
+        const emailEl = document.getElementById('auth-email');
+        const passEl = document.getElementById('auth-password');
+        const consentEl = document.getElementById('auth-consent');
+        const toggleVisBtn = document.getElementById('toggle-password-vis-btn');
+
+        if (emailEl) {
+          emailEl.addEventListener('input', (e) => {
+            state.authEmailInput = e.target.value;
+          });
+        }
+        if (passEl) {
+          passEl.addEventListener('input', (e) => {
+            state.authPasswordInput = e.target.value;
+          });
+        }
+        if (consentEl) {
+          consentEl.addEventListener('change', (e) => {
+            state.authConsentChecked = e.target.checked;
+          });
+        }
+        if (toggleVisBtn) {
+          toggleVisBtn.addEventListener('click', () => {
+            if (emailEl) state.authEmailInput = emailEl.value;
+            if (passEl) state.authPasswordInput = passEl.value;
+            state.authShowPassword = !state.authShowPassword;
+            render();
+          });
+        }
+
+        const finishAuthenticated = (userObj, goPermissions) => {
+          state.isAuthenticated = true;
+          state.userEmail = (userObj && userObj.email) || state.authEmailInput.trim().toLowerCase() || 'aarav.sharma@domain.in';
+          state.userName = (userObj && userObj.name) || deriveDisplayName(state.userEmail);
+          state.permissionsGranted = !goPermissions;
+          state.authPasswordInput = '';
+          state.authShowPassword = false;
+          state.authSubmitting = false;
+          state.authErrors = {};
+          state.authNotice = '';
+          if (!state.backendAvailable) {
+            savePreviewSession({
+              email: state.userEmail,
+              name: state.userName,
+              permissionsGranted: state.permissionsGranted
+            });
+          }
+          if (goPermissions) {
+            navigateTo('permissions');
+          } else {
+            navigateTo('app', 'today');
+          }
+        };
+
+        const googleBtn = document.getElementById('google-auth-btn');
+        if (googleBtn) {
+          googleBtn.addEventListener('click', () => {
+            if (state.authSubmitting) return;
+            state.authErrors = {};
+            state.authNotice = '';
+            if (state.backendAvailable) {
+              if (!state.googleOauthEnabled) {
+                state.authErrors = {
+                  form: 'Google sign-in is not enabled in Supabase yet. Enable Google under Supabase → Authentication → Providers, or continue with email below.'
+                };
+                render();
+                return;
+              }
+              state.authSubmitting = true;
+              render();
+              window.location.assign('/api/v1/auth/google');
+              return;
+            }
+            showToast('Signed in with Google (preview mode)');
+            finishAuthenticated(
+              { email: 'aarav.sharma@gmail.com', name: 'Aarav Sharma' },
+              mode === 'signup'
+            );
+          });
+        }
+
+        const quickDemoBtn = document.getElementById('quick-demo-signin-btn');
+        if (quickDemoBtn) {
+          quickDemoBtn.addEventListener('click', async () => {
+            if (state.authSubmitting) return;
+            state.authErrors = {};
+            state.authNotice = '';
+            if (state.backendAvailable) {
+              state.authSubmitting = true;
+              render();
+              try {
+                const res = await apiFetch('/api/v1/auth/dev-demo-signin', { method: 'POST' });
+                if (!res.ok || !res.data || !res.data.authenticated) {
+                  state.authSubmitting = false;
+                  state.authErrors = { form: (res.data && res.data.detail) || 'Demo sign-in is disabled on this server.' };
+                  render();
+                  return;
+                }
+                const goPerms = !res.data.user.permissions_granted;
+                showToast('Signed in to demo workspace');
+                finishAuthenticated(res.data.user, goPerms);
+              } catch (_e) {
+                state.authSubmitting = false;
+                state.authErrors = { form: 'Could not reach the server. Please try again.' };
+                render();
+              }
+              return;
+            }
+            showToast('Signed in to demo workspace');
+            finishAuthenticated({ email: 'demo@loop.local', name: 'Aarav Sharma' }, mode === 'signup');
+          });
+        }
+
+        const form = document.getElementById('auth-form');
+        if (form) {
+          form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (state.authSubmitting) return;
+
+            // Read directly from DOM inputs so browser autofill always works
+            const emailVal = (emailEl ? emailEl.value : state.authEmailInput).trim().toLowerCase();
+            const passVal = passEl ? passEl.value : state.authPasswordInput;
+            const consentVal = consentEl ? consentEl.checked : state.authConsentChecked;
+
+            state.authEmailInput = emailVal;
+            state.authPasswordInput = passVal;
+            state.authConsentChecked = consentVal;
+            state.authNotice = '';
+
+            const errs = {};
+            if (!emailVal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+              errs.email = 'Enter a valid email address (for example, aarav@domain.in) to receive your approved reminders.';
+            }
+            if (passVal.length < 6) {
+              errs.password = 'Use at least 6 characters for your password.';
+            }
+            if (mode === 'signup' && !consentVal) {
+              errs.consent = 'Please tick the privacy consent box before continuing.';
+            }
+            state.authErrors = errs;
+            if (Object.keys(errs).length > 0) {
+              render();
+              return;
+            }
+
+            if (state.backendAvailable) {
+              state.authSubmitting = true;
+              render();
+              try {
+                const endpoint = mode === 'signup' ? '/api/v1/auth/signup' : '/api/v1/auth/login';
+                const payload =
+                  mode === 'signup'
+                    ? { email: emailVal, password: passVal, consent_accepted: true }
+                    : { email: emailVal, password: passVal };
+                const res = await apiFetch(endpoint, { method: 'POST', body: JSON.stringify(payload) });
+
+                if (!res.ok) {
+                  state.authSubmitting = false;
+                  state.authErrors = {
+                    form: (res.data && res.data.detail) || (mode === 'signup' ? 'Could not create account.' : 'Invalid email or password.')
+                  };
+                  render();
+                  return;
+                }
+
+                if (res.data && res.data.email_confirmation_required) {
+                  state.authSubmitting = false;
+                  state.authPasswordInput = '';
+                  state.authNotice = res.data.message || 'Check your email to confirm your account, then log in.';
+                  render();
+                  return;
+                }
+
+                const userObj = (res.data && res.data.user) || { email: emailVal };
+                const goPerms = mode === 'signup' || !userObj.permissions_granted;
+                showToast(mode === 'signup' ? 'Account created' : 'Signed in');
+                finishAuthenticated(userObj, goPerms);
+              } catch (_e) {
+                state.authSubmitting = false;
+                state.authErrors = { form: 'Network error while connecting to LOOP server. Please try again.' };
+                render();
+              }
+              return;
+            }
+
+            // Standalone preview mode: real localStorage account storage & password check
+            const accounts = loadPreviewAccounts();
+            if (mode === 'signup') {
+              if (accounts[emailVal]) {
+                state.authErrors = { form: 'An account with this email already exists. Click Log in below.' };
+                render();
+                return;
+              }
+              accounts[emailVal] = {
+                email: emailVal,
+                password: passVal,
+                name: deriveDisplayName(emailVal),
+                permissionsGranted: false,
+                createdAt: new Date().toISOString()
+              };
+              savePreviewAccounts(accounts);
+              showToast('Account saved');
+              finishAuthenticated(accounts[emailVal], true);
+            } else {
+              const existing = accounts[emailVal];
+              if (!existing) {
+                state.authErrors = { form: 'No account found for this email yet. Click Create free account first.' };
+                render();
+                return;
+              }
+              if (existing.password !== passVal) {
+                state.authErrors = { form: 'Incorrect password. Please check and try again.' };
+                render();
+                return;
+              }
+              showToast('Signed in');
+              finishAuthenticated(existing, !existing.permissionsGranted);
+            }
+          });
+        }
+      }
+
+      // ----------------------------------------------------------------------
+      // 3) ESSENTIAL PERMISSIONS PAGE (/permissions)
+      // ----------------------------------------------------------------------
+      function renderPermissionsPage() {
+        const p = state.permissions;
+        const canProceed = p.documentAccess;
+
+        return `
+          <div class="min-h-screen flex flex-col justify-between p-4 sm:p-8">
+            <div class="max-w-3xl w-full mx-auto flex items-center justify-between">
+              <button type="button" data-go-route="landing" class="flex items-center gap-3 cursor-pointer">
+                ${logoSvgHtml('w-7 h-8')}
+                <span class="font-serif-display font-bold text-xl tracking-[0.14em]">LOOP</span>
+              </button>
+              <span class="text-xs font-medium neo-brass-text">Step 2 of 2 · Essential permissions</span>
+            </div>
+
+            <div class="max-w-3xl w-full mx-auto my-8">
+              <div class="p-6 sm:p-10 neo-panel shadow-xl space-y-6" style="border-color: var(--brass-border);">
+                <div class="space-y-2">
+                  <p class="text-xs font-medium neo-verdigris-text">Signed in as ${escapeHtml(state.userEmail)}</p>
+                  <h1 class="font-serif-display text-3xl sm:text-4xl font-bold">
+                    Review essential permissions
+                  </h1>
+                  <p class="text-sm leading-relaxed neo-muted">
+                    LOOP follows strict human-in-the-loop rules. Confirm how LOOP accesses your files and delivers approved reminders before opening your dashboard.
+                  </p>
+                </div>
+
+                <div class="space-y-3.5">
+                  <!-- Permission 1: Document & File Parsing (Required) -->
+                  <div class="p-4 sm:p-5 neo-subpanel flex items-start justify-between gap-4" style="border-color: ${p.documentAccess ? 'var(--verdigris)' : 'var(--brass-accent)'};">
+                    <div class="space-y-1">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <h2 class="font-semibold text-sm sm:text-base">Document &amp; file extraction</h2>
+                        <span class="text-[11px] px-2 py-0.5 rounded-full font-medium" style="background-color: var(--brass-soft); color: var(--brass-accent);">Required</span>
+                      </div>
+                      <p class="text-xs leading-relaxed neo-muted">
+                        Allows LOOP to read uploaded PDF bills, ticket vouchers, and warranty images to highlight dates and amounts for your verification.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked="${p.documentAccess ? 'true' : 'false'}"
+                      data-perm-toggle="documentAccess"
+                      class="w-11 h-6 rounded-full p-0.5 transition-colors shrink-0 cursor-pointer"
+                      style="background-color: ${p.documentAccess ? 'var(--verdigris)' : 'rgba(154,166,192,0.35)'};"
+                    >
+                      <span class="block w-5 h-5 rounded-full bg-white transition-transform ${p.documentAccess ? 'translate-x-5' : 'translate-x-0'}"></span>
+                    </button>
+                  </div>
+
+                  <!-- Permission 2: Reminder Notifications -->
+                  <div class="p-4 sm:p-5 neo-subpanel flex items-start justify-between gap-4">
+                    <div class="space-y-2 flex-1">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <h2 class="font-semibold text-sm sm:text-base">Approved reminder alerts</h2>
+                        <span class="text-[11px] px-2 py-0.5 rounded-full border neo-muted" style="border-color: var(--panel-border);">Recommended</span>
+                      </div>
+                      <p class="text-xs leading-relaxed neo-muted">
+                        Send quiet email and in-app alerts only after you explicitly approve a document’s due date.
+                      </p>
+                      <div class="pt-1 flex flex-wrap items-center gap-2">
+                        <span class="text-xs neo-muted">Default lead time:</span>
+                        ${['1 day before', '2 days before', '1 week before']
+                          .map(
+                            (lt) => `
+                            <button
+                              type="button"
+                              data-perm-lead="${lt}"
+                              class="px-2.5 py-1 rounded-lg text-xs ${p.leadTime === lt ? 'btn-primary' : 'btn-secondary'}"
+                            >
+                              ${lt}
+                            </button>
+                          `
+                          )
+                          .join('')}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked="${p.notifications ? 'true' : 'false'}"
+                      data-perm-toggle="notifications"
+                      class="w-11 h-6 rounded-full p-0.5 transition-colors shrink-0 cursor-pointer"
+                      style="background-color: ${p.notifications ? 'var(--verdigris)' : 'rgba(154,166,192,0.35)'};"
+                    >
+                      <span class="block w-5 h-5 rounded-full bg-white transition-transform ${p.notifications ? 'translate-x-5' : 'translate-x-0'}"></span>
+                    </button>
+                  </div>
+
+                  <!-- Permission 3: Microphone for Voice Notes (Optional) -->
+                  <div class="p-4 sm:p-5 neo-subpanel flex items-start justify-between gap-4">
+                    <div class="space-y-1">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <h2 class="font-semibold text-sm sm:text-base">Microphone for voice notes</h2>
+                        <span class="text-[11px] px-2 py-0.5 rounded-full border neo-muted" style="border-color: var(--panel-border);">Optional</span>
+                      </div>
+                      <p class="text-xs leading-relaxed neo-muted">
+                        Lets you speak a quick bill or renewal reminder hands-free. Audio is transcribed only when you press record.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked="${p.microphone ? 'true' : 'false'}"
+                      data-perm-toggle="microphone"
+                      class="w-11 h-6 rounded-full p-0.5 transition-colors shrink-0 cursor-pointer"
+                      style="background-color: ${p.microphone ? 'var(--verdigris)' : 'rgba(154,166,192,0.35)'};"
+                    >
+                      <span class="block w-5 h-5 rounded-full bg-white transition-transform ${p.microphone ? 'translate-x-5' : 'translate-x-0'}"></span>
+                    </button>
+                  </div>
+
+                  <!-- Locked Privacy Guarantee -->
+                  <div class="p-4 rounded-xl border flex items-center justify-between gap-3" style="background-color: var(--verdigris-soft); border-color: var(--verdigris);">
+                    <div class="text-xs">
+                      <strong class="block" style="color: var(--verdigris);">Zero AI model training guarantee</strong>
+                      <span class="neo-muted">Your archive is encrypted and excluded from model training by default.</span>
+                    </div>
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full border shrink-0" style="border-color: var(--verdigris); color: var(--verdigris);">
+                      Protected
+                    </span>
+                  </div>
+                </div>
+
+                ${
+                  !canProceed
+                    ? `<p class="text-xs neo-brass-text">Enable Document &amp; file extraction above so LOOP can read your uploaded bills and receipts.</p>`
+                    : ''
+                }
+
+                <div class="pt-4 border-t flex flex-col sm:flex-row items-center justify-between gap-3" style="border-color: var(--panel-border);">
+                  <button type="button" data-go-route="login" class="px-4 py-2.5 rounded-xl text-xs btn-secondary w-full sm:w-auto">
+                    Back to sign in
+                  </button>
+                  <button
+                    type="button"
+                    id="confirm-permissions-btn"
+                    ${canProceed ? '' : 'disabled'}
+                    class="px-6 py-3 rounded-xl text-sm btn-primary w-full sm:w-auto"
+                  >
+                    Confirm permissions &amp; enter dashboard
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-center text-xs neo-muted">
+              You can update or revoke any permission anytime in Settings.
+            </div>
+          </div>
+        `;
+      }
+
+      function bindPermissionsEvents() {
+        document.querySelectorAll('[data-go-route]').forEach((btn) => {
+          btn.addEventListener('click', () => navigateTo(btn.getAttribute('data-go-route')));
+        });
+
+        document.querySelectorAll('[data-perm-toggle]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const key = btn.getAttribute('data-perm-toggle');
+            state.permissions[key] = !state.permissions[key];
+            render();
+          });
+        });
+
+        document.querySelectorAll('[data-perm-lead]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            state.permissions.leadTime = btn.getAttribute('data-perm-lead');
+            state.draftReminderTiming = state.permissions.leadTime;
+            render();
+          });
+        });
+
+        const confirmBtn = document.getElementById('confirm-permissions-btn');
+        if (confirmBtn) {
+          confirmBtn.addEventListener('click', () => {
+            if (!state.permissions.documentAccess) return;
+            state.permissionsGranted = true;
+            state.channels.pushNotifications = state.permissions.notifications;
+            state.consents.localParsing = state.permissions.documentAccess;
+            if (!state.backendAvailable && state.userEmail) {
+              const accounts = loadPreviewAccounts();
+              if (accounts[state.userEmail]) {
+                accounts[state.userEmail].permissionsGranted = true;
+                savePreviewAccounts(accounts);
+              }
+              savePreviewSession({
+                email: state.userEmail,
+                name: state.userName,
+                permissionsGranted: true
+              });
+            } else if (state.backendAvailable) {
+              const leadDays =
+                state.permissions.leadTime === '1 day before'
+                  ? 1
+                  : state.permissions.leadTime === '1 week before'
+                    ? 7
+                    : 2;
+              apiFetch('/api/v1/settings', {
+                method: 'PATCH',
+                body: JSON.stringify({
+                  complete_onboarding: true,
+                  permissions: {
+                    document_access: state.permissions.documentAccess,
+                    notifications: state.permissions.notifications,
+                    microphone: state.permissions.microphone,
+                    lead_days: leadDays
+                  }
+                })
+              }).catch(() => {});
+            }
+            showToast('Permissions saved · Welcome to LOOP');
+            navigateTo('app', 'today');
+          });
+        }
+      }
+
+      // ----------------------------------------------------------------------
+      // 4) DASHBOARD SHELL + SCREENS (/app)
+      // ----------------------------------------------------------------------
+      function renderDashboardShell(innerContentHtml) {
+        const itemsWithin30 = state.records.filter((r) => r.daysFromToday <= 30).length;
+        const navItems = [
+          {
+            id: 'today',
+            label: 'Today',
+            badge: itemsWithin30,
+            icon: `<svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>`
+          },
+          {
+            id: 'add',
+            label: 'Add document',
+            badge: null,
+            icon: `<svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`
+          },
+          {
+            id: 'vault',
+            label: 'Vault',
+            badge: state.records.length,
+            icon: `<svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`
+          },
+          {
+            id: 'ask',
+            label: 'Ask LOOP',
+            badge: null,
+            icon: `<svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`
+          },
+          {
+            id: 'settings',
+            label: 'Settings',
+            badge: null,
+            icon: `<svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`
+          }
+        ];
+
+        const desktopNavLinks = navItems
+          .map((item) => {
+            const active = state.appTab === item.id;
+            const badgeHtml =
+              item.badge !== null && item.badge > 0
+                ? `<span class="text-xs px-2 py-0.5 rounded-full font-semibold ${
+                    active ? 'bg-[#D4AE5E] text-[#0A1228]' : 'bg-[#101B3A] text-[#D4AE5E] border border-[#D4AE5E]/30'
+                  }">${item.badge}</span>`
+                : '';
+            return `
+              <button
+                type="button"
+                data-app-tab="${item.id}"
+                class="w-full flex items-center justify-between px-6 py-3 text-sm transition-colors cursor-pointer ${
+                  active
+                    ? 'border-l-[3px] border-[#D4AE5E] bg-[#101B3A] text-[#EDEFF5] font-semibold'
+                    : 'border-l-[3px] border-transparent text-[#9AA6C0] hover:text-[#EDEFF5] hover:bg-[#101B3A]/60 font-medium'
+                }"
+              >
+                <span class="flex items-center gap-3">
+                  <span class="${active ? 'text-[#D4AE5E]' : ''}">${item.icon}</span>
+                  <span>${item.label}</span>
+                </span>
+                ${badgeHtml}
+              </button>
+            `;
+          })
+          .join('');
+
+        const mobileNavLinks = navItems
+          .map((item) => {
+            const active = state.appTab === item.id;
+            return `
+              <button
+                type="button"
+                data-app-tab="${item.id}"
+                class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm cursor-pointer ${
+                  active ? 'bg-[#D4AE5E] text-[#0A1228] font-semibold' : 'text-[#9AA6C0] hover:bg-[#101B3A] hover:text-[#EDEFF5]'
+                }"
+              >
+                <span class="flex items-center gap-2.5">${item.icon}<span>${item.label}</span></span>
+                ${item.badge !== null && item.badge > 0 ? `<span class="text-xs font-semibold">${item.badge}</span>` : ''}
+              </button>
+            `;
+          })
+          .join('');
+
+        return `
+          <div class="min-h-screen flex flex-col md:flex-row">
+            <!-- DESKTOP SIDEBAR (240px) -->
+            <aside aria-label="Primary navigation" class="hidden md:flex md:w-[240px] md:flex-col md:fixed md:inset-y-0 fluted-navy-sidebar border-r border-[#D4AE5E]/45 text-[#EDEFF5] z-30">
+              <div class="px-6 py-6 border-b border-white/10">
+                <button type="button" data-go-route="landing" class="flex items-center gap-3 text-left cursor-pointer">
+                  ${logoSvgHtml('w-8 h-9')}
+                  <div>
+                    <span class="font-serif-display font-bold text-2xl tracking-[0.14em] text-[#EDEFF5] block leading-none">LOOP</span>
+                    <span class="text-[11px] text-[#9AA6C0] block mt-1">Personal archive &amp; reminders</span>
+                  </div>
+                </button>
+              </div>
+
+              <nav class="flex-1 py-5 space-y-1">${desktopNavLinks}</nav>
+
+              <div class="p-4 border-t border-white/10 space-y-2">
+                <button
+                  type="button"
+                  id="dash-theme-toggle"
+                  class="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-[10px] bg-[#101B3A] hover:bg-[#16244C] border border-[#26365F] text-xs font-medium text-[#EDEFF5] cursor-pointer"
+                >
+                  <span class="text-[#D4AE5E]">${state.lightMode ? '☾' : '☀'}</span>
+                  <span>${state.lightMode ? 'Dark navy theme' : 'Light marble theme'}</span>
+                </button>
+              </div>
+            </aside>
+
+            <!-- MOBILE TOP BAR -->
+            <header class="md:hidden sticky top-0 z-30 fluted-navy-sidebar border-b border-[#D4AE5E]/45 text-[#EDEFF5]">
+              <div class="px-4 h-14 flex items-center justify-between">
+                <button type="button" data-go-route="landing" class="flex items-center gap-2.5 cursor-pointer">
+                  ${logoSvgHtml('w-7 h-8')}
+                  <span class="font-serif-display font-bold text-xl tracking-[0.14em]">LOOP</span>
+                </button>
+                <div class="flex items-center gap-2">
+                  <button type="button" id="dash-mobile-theme-toggle" class="px-2.5 py-1.5 rounded-lg bg-[#101B3A] border border-[#26365F] text-xs text-[#D4AE5E]">
+                    ${state.lightMode ? 'Dark' : 'Light'}
+                  </button>
+                  <button type="button" id="dash-mobile-menu-btn" class="px-3 py-1.5 rounded-lg bg-[#101B3A] border border-[#26365F] text-xs font-medium text-[#EDEFF5]">
+                    ${state.mobileMenuOpen ? 'Close' : 'Menu'}
+                  </button>
+                </div>
+              </div>
+              ${
+                state.mobileMenuOpen
+                  ? `<div class="border-t border-white/10 px-4 py-3 space-y-1 bg-[#0A1228]"><nav class="space-y-1">${mobileNavLinks}</nav></div>`
+                  : ''
+              }
+            </header>
+
+            <!-- MAIN CONTENT -->
+            <main class="flex-1 md:pl-[240px]">
+              <div id="dash-tab-stage" class="page-stage max-w-5xl mx-auto px-4 sm:px-6 lg:px-10 py-7 sm:py-9">
+                ${innerContentHtml}
+              </div>
+            </main>
+          </div>
+        `;
+      }
+
+      // ----------------------------------------------------------------------
+      // TODAY TAB CONTENT
+      // ----------------------------------------------------------------------
+      function buildThirtyDayRingSvg(itemsWithin30, selectedItem) {
+        const size = 320;
+        const cx = 160;
+        const cy = 160;
+        const radius = 120;
+
+        const brassColor = state.lightMode ? '#A67C2E' : '#D4AE5E';
+        const verdigrisColor = state.lightMode ? '#1E8A6E' : '#6CCBB2';
+        const trackColor = state.lightMode ? '#CBD3E1' : '#26365F';
+        const ringBg = state.lightMode ? '#FFFFFF' : '#0A1228';
+
+        let ticksSvg = '';
+        for (let day = 0; day < 30; day++) {
+          const angleDeg = -90 + day * 12;
+          const rad = (angleDeg * Math.PI) / 180;
+          const isWeek = day % 7 === 0;
+          const r1 = isWeek ? radius - 11 : radius - 6;
+          const r2 = radius;
+          ticksSvg += `<line x1="${(cx + r1 * Math.cos(rad)).toFixed(2)}" y1="${(cy + r1 * Math.sin(rad)).toFixed(2)}" x2="${(cx + r2 * Math.cos(rad)).toFixed(2)}" y2="${(cy + r2 * Math.sin(rad)).toFixed(2)}" stroke="${isWeek ? brassColor : trackColor}" stroke-width="${isWeek ? 1.9 : 1.1}" stroke-linecap="round" />`;
+        }
+
+        const markersSvg = itemsWithin30
+          .map((item) => {
+            const angleDeg = -90 + item.daysFromToday * 12;
+            const rad = (angleDeg * Math.PI) / 180;
+            const mx = (cx + radius * Math.cos(rad)).toFixed(2);
+            const my = (cy + radius * Math.sin(rad)).toFixed(2);
+            const isSelected = selectedItem && selectedItem.id === item.id;
+            return `
+              <g role="button" tabindex="0" data-select-ring-id="${item.id}" class="cursor-pointer">
+                ${
+                  isSelected
+                    ? `<circle cx="${mx}" cy="${my}" r="15" fill="${brassColor}" fill-opacity="0.18" /><circle cx="${mx}" cy="${my}" r="10.5" fill="none" stroke="${brassColor}" stroke-width="1.2" />`
+                    : ''
+                }
+                <circle cx="${mx}" cy="${my}" r="${isSelected ? 7.5 : 5.5}" fill="${brassColor}" stroke="${ringBg}" stroke-width="1.8" />
+              </g>
+            `;
+          })
+          .join('');
+
+        return `
+          <div class="flex flex-col items-center">
+            <div class="relative w-full max-w-[310px] aspect-square flex items-center justify-center">
+              <svg viewBox="0 0 ${size} ${size}" class="w-full h-full overflow-visible">
+                <circle cx="${cx}" cy="${cy}" r="${radius + 12}" fill="none" stroke="${trackColor}" stroke-width="1" />
+                <circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="${trackColor}" stroke-width="1.8" />
+                ${ticksSvg}
+                <circle cx="${cx}" cy="${cy - radius}" r="6" fill="${verdigrisColor}" stroke="${ringBg}" stroke-width="1.8" />
+                <text x="${cx}" y="${cy - radius - 14}" text-anchor="middle" fill="${verdigrisColor}" font-size="11" font-weight="600">Today</text>
+                ${markersSvg}
+              </svg>
+
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-12 pointer-events-none">
+                ${
+                  selectedItem
+                    ? `
+                      <span class="font-serif-display text-6xl font-bold leading-none" style="color: var(--text-primary);">${selectedItem.daysFromToday}</span>
+                      <span class="text-xs font-medium mt-1 neo-muted">${selectedItem.daysFromToday === 1 ? 'day left' : 'days left'}</span>
+                      <p class="font-serif-display text-lg font-bold leading-tight mt-2 line-clamp-2">${escapeHtml(selectedItem.title)}</p>
+                      <span class="text-xs mt-1 font-medium neo-brass-text">${escapeHtml(selectedItem.dueDateDisplay)} · ${escapeHtml(selectedItem.amount)}</span>
+                    `
+                    : `<p class="font-serif-display text-xl font-bold">All caught up</p>`
+                }
+              </div>
+            </div>
+
+            ${
+              selectedItem
+                ? `
+                  <div class="mt-2">
+                    <button type="button" id="mark-paid-btn" data-mark-paid-id="${selectedItem.id}" class="px-4 py-2 rounded-[10px] text-xs btn-secondary">
+                      Mark as paid
+                    </button>
+                  </div>
+                `
+                : ''
+            }
+
+            <div class="flex flex-wrap items-center justify-between w-full pt-4 mt-4 border-t text-xs neo-muted" style="border-color: var(--brass-border);">
+              <span class="inline-flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full" style="background-color: var(--verdigris);"></span>
+                <span>Today (26 Nov)</span>
+              </span>
+              <span class="inline-flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full" style="background-color: var(--brass-accent);"></span>
+                <span>Approved marker (next 30 days)</span>
+              </span>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderTodayTab() {
+        const sorted = getSortedRecords();
+        const itemsWithin30 = sorted.filter((r) => r.daysFromToday <= 30);
+        const selectedItem = sorted.find((r) => r.id === state.selectedRingItemId) || sorted[0] || null;
+        if (selectedItem) state.selectedRingItemId = selectedItem.id;
+
+        const rowsHtml =
+          sorted.length === 0
+            ? `<div class="py-10 text-center space-y-2"><p class="font-serif-display text-xl font-bold">Nothing coming up</p><p class="text-sm neo-muted">Add a document to review and approve your first reminder.</p></div>`
+            : sorted
+                .map((item) => {
+                  const isSelected = selectedItem && selectedItem.id === item.id;
+                  const beyond30 = item.daysFromToday > 30;
+                  return `
+                    <div
+                      role="button"
+                      tabindex="0"
+                      data-select-row-id="${item.id}"
+                      style="${isSelected ? 'border-color: var(--brass-accent); background-color: var(--input-bg);' : ''}"
+                      class="p-4 neo-subpanel transition-colors cursor-pointer flex items-center justify-between gap-4 hover:border-[#D4AE5E]"
+                    >
+                      <div class="flex items-center gap-4 min-w-0">
+                        <div class="w-14 shrink-0 text-center pr-3 border-r" style="border-color: var(--panel-border);">
+                          <span class="font-serif-display text-3xl font-bold block leading-none neo-brass-text">${item.daysFromToday}d</span>
+                          <span class="text-[11px] block mt-1 neo-muted">${escapeHtml(item.dueDateDisplay.replace(' 2026', '').replace(' 2027', ''))}</span>
+                        </div>
+                        <div class="min-w-0">
+                          <div class="flex flex-wrap items-center gap-2">
+                            <h3 class="font-semibold text-sm sm:text-base truncate">${escapeHtml(item.title)}</h3>
+                            ${getCategoryBadgeHtml(item.category)}
+                            ${beyond30 ? `<span class="text-[11px] font-medium px-2 py-0.5 rounded-full border neo-muted" style="border-color: var(--panel-border);">Beyond 30-day ring</span>` : ''}
+                          </div>
+                          <p class="text-xs sm:text-sm mt-1 neo-muted">${escapeHtml(item.issuer)} • <span class="font-semibold">${escapeHtml(item.amount)}</span></p>
+                        </div>
+                      </div>
+                      <span class="hidden sm:inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full border shrink-0" style="background-color: var(--highlight-green-bg); color: var(--verdigris); border-color: var(--highlight-green-border);">
+                        <span>${escapeHtml(item.status)}</span>
+                      </span>
+                    </div>
+                  `;
+                })
+                .join('');
+
+        return `
+          <section class="space-y-7">
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+              <div>
+                <p class="text-sm font-medium neo-brass-text">Good morning, Thursday, 26 Nov</p>
+                <h1 class="font-serif-display text-3xl sm:text-4xl font-bold tracking-tight mt-0.5">Today</h1>
+                <p class="text-sm mt-1 neo-muted">Your next 30 days of approved bills, bookings, and renewals on a single dial.</p>
+              </div>
+              <button type="button" id="today-add-btn" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-sm btn-primary self-start sm:self-auto">
+                <span>+ Add document</span>
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              <div class="lg:col-span-5 p-6 neo-panel">
+                <div class="flex items-center justify-between mb-3">
+                  <h2 class="font-serif-display text-xl font-bold">Next 30 days · ${itemsWithin30.length} on ring</h2>
+                </div>
+                ${buildThirtyDayRingSvg(itemsWithin30, selectedItem)}
+              </div>
+
+              <div class="lg:col-span-7 p-5 sm:p-6 space-y-4 neo-panel">
+                <div class="flex items-center justify-between">
+                  <h2 class="font-serif-display text-2xl font-bold">Coming up</h2>
+                  <span class="text-xs neo-muted">Select a row to inspect on the ring</span>
+                </div>
+                <div class="space-y-2.5">${rowsHtml}</div>
+              </div>
+            </div>
+
+            <div class="p-5 sm:p-6 neo-panel flex flex-col sm:flex-row sm:items-center justify-between gap-4" style="border-color: var(--brass-border);">
+              <div class="space-y-1">
+                <span class="text-xs font-medium neo-brass-text">Schedule pattern</span>
+                <h3 class="font-serif-display text-xl sm:text-2xl font-bold">
+                  Three renewals and bookings fall in December across your accounts.
+                </h3>
+              </div>
+              <button type="button" data-app-tab="vault" class="text-sm font-medium neo-brass-text underline shrink-0 cursor-pointer">
+                Review them together →
+              </button>
+            </div>
+          </section>
+        `;
+      }
+
+      // ----------------------------------------------------------------------
+      // ADD DOCUMENT & LIVE SCAN TAB CONTENT
+      // ----------------------------------------------------------------------
+      function clearScanTimers() {
+        scanTimers.forEach((t) => clearTimeout(t));
+        scanTimers = [];
+      }
+
+      function resetScanState() {
+        clearScanTimers();
+        state.scanDoc = null;
+        state.isScanning = false;
+        state.scanStage = 0;
+        state.selectedChoiceId = null;
+        state.uploadError = '';
+        state.draftIssuer = '';
+        state.draftCategory = 'Bill';
+        state.draftAmount = '';
+        state.draftDueDate = '';
+        state.draftReminderTiming = state.permissions.leadTime || '3 days before';
+      }
+
+      function startLiveScan(docPayload) {
+        clearScanTimers();
+        state.uploadError = '';
+        state.scanDoc = docPayload;
+        state.selectedChoiceId = null;
+
+        if (prefersReducedMotion) {
+          state.isScanning = false;
+          state.scanStage = 4;
+          state.draftIssuer = docPayload.issuer;
+          state.draftCategory = docPayload.category;
+          state.draftAmount = docPayload.amount;
+          state.draftReminderTiming = docPayload.reminderTiming;
+          render();
+          return;
+        }
+
+        state.isScanning = true;
+        state.scanStage = 0;
+        state.draftIssuer = '';
+        state.draftAmount = '';
+        state.draftDueDate = '';
+        render();
+
+        scanTimers.push(setTimeout(() => { state.scanStage = 1; state.draftIssuer = docPayload.issuer; state.draftCategory = docPayload.category; render(); }, 550));
+        scanTimers.push(setTimeout(() => { state.scanStage = 2; state.draftAmount = docPayload.amount; render(); }, 1150));
+        scanTimers.push(setTimeout(() => { state.scanStage = 3; state.draftReminderTiming = docPayload.reminderTiming; render(); }, 1750));
+        scanTimers.push(setTimeout(() => { state.scanStage = 4; state.isScanning = false; render(); }, 2400));
+      }
+
+      function renderAddTab() {
+        const errorBanner = state.uploadError
+          ? `<div role="alert" class="p-4 rounded-[14px] border flex items-center justify-between gap-3" style="background-color: var(--amber-card-bg); border-color: var(--amber-card-border);"><span class="text-sm">${escapeHtml(state.uploadError)}</span><button type="button" id="close-upload-error" class="text-xs underline">Close</button></div>`
+          : '';
+
+        if (!state.scanDoc) {
+          const tabsHtml = [
+            { id: 'file', label: 'Upload file' },
+            { id: 'text', label: 'Paste text' },
+            { id: 'voice', label: 'Voice note' }
+          ]
+            .map((t) => `<button type="button" data-add-tab="${t.id}" class="py-2.5 px-3 rounded-[10px] text-sm font-medium ${state.addInputTab === t.id ? 'btn-primary' : 'neo-muted'}">${t.label}</button>`)
+            .join('');
+
+          let bodyHtml = '';
+          if (state.addInputTab === 'file') {
+            bodyHtml = `
+              <div class="p-6 sm:p-8 flex flex-col items-center neo-panel">
+                <div id="arch-dropzone" class="neoclassical-arch w-full max-w-md p-2 border-2" style="border-color: var(--brass-accent); background-color: var(--subpanel-bg);">
+                  <div class="neoclassical-arch w-full pt-14 pb-9 px-6 border flex flex-col items-center text-center" style="border-color: var(--panel-border); background-color: var(--input-bg);">
+                    <input id="file-upload-input" type="file" accept=".pdf,.jpg,.jpeg,.png" class="hidden" />
+                    <h2 class="font-serif-display text-2xl font-bold">Drop your document here</h2>
+                    <p class="text-xs sm:text-sm mt-1.5 max-w-xs neo-muted">Supports PDF, JPG, or PNG bills, travel bookings, receipts, and warranties</p>
+                    <div class="mt-6 flex flex-col sm:flex-row items-center gap-2.5 w-full justify-center">
+                      <button type="button" id="scan-sample-btn" class="px-4 py-2.5 rounded-[10px] text-sm btn-primary">Scan a sample bill</button>
+                      <button type="button" id="choose-file-btn" class="px-4 py-2.5 rounded-[10px] text-sm btn-secondary">Choose file</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+          } else if (state.addInputTab === 'text') {
+            bodyHtml = `
+              <div class="p-6 sm:p-8 space-y-4 neo-panel">
+                <div class="flex items-center justify-between gap-2">
+                  <label for="paste-doc-textarea" class="text-sm font-medium">Paste bill or confirmation text</label>
+                  <button type="button" id="fill-sample-text-btn" class="text-xs font-medium underline neo-brass-text">Fill sample bill text</button>
+                </div>
+                <textarea id="paste-doc-textarea" rows="5" placeholder="Paste the text of your electricity bill, booking confirmation, or receipt…" class="w-full rounded-[10px] p-3.5 text-sm neo-input">${escapeHtml(state.pastedText)}</textarea>
+                <div class="flex items-center justify-between">
+                  <button type="button" id="scan-sample-from-text-btn" class="text-xs underline neo-muted">Or scan a sample bill</button>
+                  <button type="button" id="extract-text-btn" class="px-4 py-2.5 rounded-[10px] text-sm btn-primary">Scan text</button>
+                </div>
+              </div>
+            `;
+          } else {
+            bodyHtml = `
+              <div class="p-8 text-center space-y-5 neo-panel">
+                <h2 class="font-serif-display text-2xl font-bold">${state.isRecording ? `Recording… 00:${String(state.recordingSeconds).padStart(2, '0')}` : 'Record a spoken bill or reminder'}</h2>
+                <p class="text-sm max-w-md mx-auto neo-muted">Speak the issuer, amount, and due date, then stop recording to inspect the extracted evidence.</p>
+                <div class="flex items-center justify-center gap-3">
+                  <button type="button" id="toggle-voice-btn" class="px-5 py-2.5 rounded-[10px] text-sm btn-primary">${state.isRecording ? 'Stop recording' : 'Start recording'}</button>
+                  <button type="button" id="scan-sample-from-voice-btn" class="px-4 py-2.5 rounded-[10px] text-sm btn-secondary">Scan a sample bill</button>
+                </div>
+              </div>
+            `;
+          }
+
+          return `
+            <section class="space-y-6">
+              <div>
+                <h1 class="font-serif-display text-3xl sm:text-4xl font-bold">Add document</h1>
+                <p class="text-sm mt-1 neo-muted">Upload a bill, booking, receipt, or warranty. Nothing is scheduled without your approval.</p>
+              </div>
+              ${errorBanner}
+              <div class="max-w-2xl mx-auto space-y-6">
+                <div class="grid grid-cols-3 gap-1.5 p-1.5 neo-panel">${tabsHtml}</div>
+                ${bodyHtml}
+              </div>
+            </section>
+          `;
+        }
+
+        const doc = state.scanDoc;
+        const beamHtml = state.isScanning && !prefersReducedMotion ? `<div class="scan-beam"><div class="h-[2px] w-full bg-[#D4AE5E]"></div></div>` : '';
+        const questionCard =
+          state.scanStage >= 4 && !state.selectedChoiceId
+            ? `
+              <div class="p-5 rounded-[14px] border-2 space-y-3" style="background-color: var(--amber-card-bg); border-color: var(--amber-card-border);">
+                <h3 class="font-serif-display text-xl font-bold">Which date is the due date?</h3>
+                <p class="text-xs neo-muted">The statement prints "12/12/2026" alongside a "11 Dec 2026" billing cycle cutoff.</p>
+                <div class="space-y-2">
+                  ${doc.choices.map((c) => `<button type="button" data-date-choice-id="${c.id}" class="w-full text-left p-3 rounded-[10px] text-xs font-medium flex items-center justify-between btn-secondary"><span>${escapeHtml(c.label)}</span><span class="px-2 py-0.5 rounded bg-[#D4AE5E] text-[#0A1228] font-semibold">Choose</span></button>`).join('')}
+                </div>
+              </div>
+            `
+            : '';
+
+        const isApproveEnabled = !state.isScanning && Boolean(state.selectedChoiceId || state.draftDueDate) && Boolean(state.draftIssuer.trim());
+
+        return `
+          <section class="space-y-6">
+            <div>
+              <h1 class="font-serif-display text-3xl sm:text-4xl font-bold">Review extracted evidence</h1>
+              <p class="text-sm mt-1 neo-muted">Confirm the highlighted fields before adding to your 30-day ring.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              <div class="lg:col-span-7 relative overflow-hidden neo-panel p-5 sm:p-6 space-y-4">
+                ${beamHtml}
+                <div class="pb-3 border-b flex items-center justify-between" style="border-color: var(--panel-border);">
+                  <div>
+                    <h2 class="font-serif-display text-2xl font-bold">${escapeHtml(doc.title)}</h2>
+                    <p class="text-xs neo-muted">${escapeHtml(doc.billingPeriod)}</p>
+                  </div>
+                  <span class="text-xs font-mono px-2.5 py-1 neo-subpanel neo-muted">${escapeHtml(doc.accountNumber)}</span>
+                </div>
+                <div class="p-3.5 neo-subpanel" style="${state.scanStage >= 1 ? 'background-color: var(--highlight-green-bg); border-color: var(--highlight-green-border);' : ''}">
+                  <span class="text-xs neo-muted block">Issuing authority</span>
+                  <p class="text-sm font-semibold">${escapeHtml(doc.issuer)}</p>
+                </div>
+                <div class="p-3.5 neo-subpanel" style="${state.scanStage >= 2 ? 'background-color: var(--highlight-green-bg); border-color: var(--highlight-green-border);' : ''}">
+                  <span class="text-xs neo-muted block">Amount due</span>
+                  <p class="text-sm font-semibold">Amount Due: ${escapeHtml(doc.amountRaw)}</p>
+                </div>
+                <div class="p-3.5 neo-subpanel" style="${state.scanStage >= 4 ? (state.selectedChoiceId ? 'background-color: var(--highlight-green-bg); border-color: var(--highlight-green-border);' : 'background-color: var(--highlight-brass-bg); border-color: var(--highlight-brass-border);') : ''}">
+                  <span class="text-xs neo-muted block">Printed due date stub</span>
+                  <p class="text-sm font-semibold">Due Date: 12/12/2026 (Cutoff: 11 Dec 2026)</p>
+                </div>
+              </div>
+
+              <div class="lg:col-span-5 space-y-4">
+                ${questionCard}
+                <div class="p-5 space-y-4 neo-panel">
+                  <h3 class="font-serif-display text-xl font-bold">Extracted details</h3>
+                  <div>
+                    <label class="block text-xs font-medium mb-1 neo-muted">Issuer</label>
+                    <input id="draft-issuer-input" type="text" value="${escapeHtml(state.draftIssuer)}" class="w-full px-3 py-2 rounded-[10px] text-sm neo-input" />
+                  </div>
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-xs font-medium mb-1 neo-muted">Category</label>
+                      <select id="draft-category-select" class="w-full px-3 py-2 rounded-[10px] text-sm neo-input">
+                        <option value="Bill" ${state.draftCategory === 'Bill' ? 'selected' : ''}>Bill</option>
+                        <option value="Booking" ${state.draftCategory === 'Booking' ? 'selected' : ''}>Booking</option>
+                        <option value="Warranty" ${state.draftCategory === 'Warranty' ? 'selected' : ''}>Warranty</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium mb-1 neo-muted">Amount</label>
+                      <input id="draft-amount-input" type="text" value="${escapeHtml(state.draftAmount)}" class="w-full px-3 py-2 rounded-[10px] text-sm neo-input" />
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium mb-1 neo-muted">Due date</label>
+                    <input id="draft-duedate-input" type="date" value="${escapeHtml(state.draftDueDate)}" class="w-full px-3 py-2 rounded-[10px] text-sm neo-input" />
+                  </div>
+                  <div class="pt-2 space-y-2">
+                    <button type="button" id="approve-reminder-btn" ${isApproveEnabled ? '' : 'disabled'} class="w-full py-2.5 px-4 rounded-[10px] text-sm btn-primary">
+                      Approve reminder
+                    </button>
+                    <button type="button" id="dismiss-scan-btn" class="w-full py-2 px-4 rounded-[10px] text-sm btn-secondary">
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      // ----------------------------------------------------------------------
+      // VAULT TAB CONTENT
+      // ----------------------------------------------------------------------
+      function renderVaultTab() {
+        const q = state.vaultSearch.trim().toLowerCase();
+        const filtered = getSortedRecords().filter((rec) => {
+          const matchesType = state.vaultFilter === 'All' || rec.category === state.vaultFilter;
+          const matchesSearch = !q || rec.title.toLowerCase().includes(q) || rec.issuer.toLowerCase().includes(q) || rec.snippet.toLowerCase().includes(q);
+          return matchesType && matchesSearch;
+        });
+
+        const filterButtons = ['All', 'Bill', 'Booking', 'Warranty']
+          .map((type) => `<button type="button" data-vault-filter="${type}" class="px-3.5 py-2 rounded-[10px] text-xs font-medium ${state.vaultFilter === type ? 'btn-primary' : 'btn-secondary'}">${type}</button>`)
+          .join('');
+
+        return `
+          <section class="space-y-6">
+            <div>
+              <h1 class="font-serif-display text-3xl sm:text-4xl font-bold">Vault</h1>
+              <p class="text-sm mt-1 neo-muted">Searchable archive of approved bills, bookings, and warranties with certificate originals.</p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3">
+              <input id="vault-search-input" type="search" value="${escapeHtml(state.vaultSearch)}" placeholder="Search saved records…" class="flex-1 px-4 py-2.5 rounded-[12px] text-sm neo-input" />
+              <div class="flex flex-wrap items-center gap-1.5">${filterButtons}</div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              ${filtered
+                .map(
+                  (rec) => `
+                  <div class="p-5 flex flex-col justify-between gap-4 neo-panel">
+                    <div class="space-y-2">
+                      <div class="flex items-center justify-between gap-2">${getCategoryBadgeHtml(rec.category)}<span class="text-xs neo-muted">Saved ${escapeHtml(rec.savedAt)}</span></div>
+                      <h2 class="font-serif-display text-xl font-bold">${escapeHtml(rec.title)}</h2>
+                      <p class="text-xs neo-muted">${escapeHtml(rec.issuer)}</p>
+                      <p class="text-xs leading-relaxed neo-muted">${escapeHtml(rec.snippet)}</p>
+                    </div>
+                    <div class="pt-3.5 border-t flex items-center justify-between gap-2" style="border-color: var(--panel-border);">
+                      <div class="text-xs"><span class="font-semibold">${escapeHtml(rec.amount)}</span> <span class="neo-muted">• ${escapeHtml(rec.dueDateDisplay)}</span></div>
+                      <button type="button" data-open-original-id="${rec.id}" class="px-3 py-1.5 rounded-lg text-xs btn-secondary">Open original</button>
+                    </div>
+                  </div>
+                `
+                )
+                .join('')}
+            </div>
+          </section>
+        `;
+      }
+
+      // ----------------------------------------------------------------------
+      // ASK LOOP TAB CONTENT
+      // ----------------------------------------------------------------------
+      function executeGroundedAsk(questionText) {
+        const q = (questionText !== undefined ? questionText : state.askQuery).trim();
+        if (questionText !== undefined) state.askQuery = questionText;
+        if (!q) return;
+
+        if (typewriterTimer) clearInterval(typewriterTimer);
+        const lower = q.toLowerCase();
+        const stopWords = new Set(['when', 'what', 'how', 'much', 'does', 'the', 'for', 'are', 'and', 'with', 'my', 'is', 'date']);
+        const keywords = lower.replace(/[?.,!]/g, '').split(/\s+/).filter((w) => w.length > 2 && !stopWords.has(w));
+
+        let bestMatch = null;
+        let bestScore = 0;
+        state.records.forEach((rec) => {
+          const corpus = `${rec.title} ${rec.issuer} ${rec.category} ${rec.amount} ${rec.dueDateDisplay} ${rec.snippet}`.toLowerCase();
+          let score = 0;
+          keywords.forEach((kw) => { if (corpus.includes(kw)) score += 1; });
+          if (score > bestScore) { bestScore = score; bestMatch = rec; }
+        });
+
+        if (bestMatch && bestScore > 0) {
+          state.askResult = {
+            found: true,
+            fullAnswer: `Your ${bestMatch.title} (${bestMatch.amount}) is scheduled for ${bestMatch.dueDateDisplay}, which is ${bestMatch.daysFromToday} days from today.`,
+            source: bestMatch
+          };
+        } else {
+          state.askResult = {
+            found: false,
+            fullAnswer: 'No matching record is saved in your Vault yet. Add and approve a document first so LOOP can answer from verified records.',
+            source: null
+          };
+        }
+
+        state.typedAnswer = state.askResult.fullAnswer;
+        state.typingComplete = true;
+        render();
+      }
+
+      function renderAskTab() {
+        const presets = [
+          'When is my next credit card bill?',
+          'What is the Goa trip check-in date?',
+          'When does my refrigerator warranty expire?',
+          'What is my broadband renewal amount?'
+        ];
+
+        const resultHtml = state.askResult
+          ? `
+            <div class="p-6 sm:p-8 space-y-5 neo-panel">
+              <span class="text-xs font-medium" style="color: ${state.askResult.found ? 'var(--verdigris)' : 'var(--brass-accent)'};">
+                ${state.askResult.found ? 'Grounded in saved Vault record' : 'No matching record'}
+              </span>
+              <p class="font-serif-display text-2xl sm:text-3xl font-semibold leading-snug">${escapeHtml(state.typedAnswer)}</p>
+              ${
+                state.askResult.found && state.askResult.source
+                  ? `
+                    <div class="p-4 space-y-2 neo-subpanel">
+                      <div class="flex items-center justify-between gap-2">
+                        <span class="font-semibold text-sm">${escapeHtml(state.askResult.source.title)}</span>
+                        <button type="button" id="ask-open-source-btn" data-open-source-id="${state.askResult.source.id}" class="px-3 py-1.5 rounded-lg text-xs btn-primary">Open source</button>
+                      </div>
+                      <p class="text-xs neo-muted">“${escapeHtml(state.askResult.source.snippet)}”</p>
+                    </div>
+                  `
+                  : ''
+              }
+            </div>
+          `
+          : '';
+
+        return `
+          <section class="max-w-3xl mx-auto space-y-6">
+            <div>
+              <h1 class="font-serif-display text-3xl sm:text-4xl font-bold">Ask LOOP</h1>
+              <p class="text-sm mt-1 neo-muted">Answers come exclusively from your saved Vault records and cite the verified source document.</p>
+            </div>
+            <form id="ask-loop-form" class="p-2 flex items-center gap-2 neo-panel">
+              <input id="ask-loop-input" type="text" value="${escapeHtml(state.askQuery)}" placeholder="Ask about your bills, Goa trip, or appliance warranty…" class="flex-1 bg-transparent py-2 px-3 text-sm focus:outline-none" />
+              <button type="submit" class="px-4 py-2 rounded-[10px] text-sm btn-primary">Ask</button>
+            </form>
+            <div class="flex flex-wrap gap-2">
+              ${presets.map((q) => `<button type="button" data-ask-preset="${escapeHtml(q)}" class="px-3 py-1.5 rounded-[10px] text-xs btn-secondary">${escapeHtml(q)}</button>`).join('')}
+            </div>
+            ${resultHtml}
+          </section>
+        `;
+      }
+
+      // ----------------------------------------------------------------------
+      // SETTINGS TAB CONTENT
+      // ----------------------------------------------------------------------
+      function renderSettingsTab() {
+        return `
+          <section class="max-w-3xl mx-auto space-y-6">
+            <div>
+              <h1 class="font-serif-display text-3xl sm:text-4xl font-bold">Settings</h1>
+              <p class="text-sm mt-1 neo-muted">Manage account session, permissions, reminder channels, and archive export.</p>
+            </div>
+
+            <div class="p-6 space-y-4 neo-panel">
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 class="font-serif-display text-xl font-bold">${escapeHtml(state.userName)}</h2>
+                  <p class="text-xs neo-muted">${escapeHtml(state.userEmail || 'aarav.sharma@domain.in')}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" data-go-route="permissions" class="px-3.5 py-2 rounded-[10px] text-xs btn-secondary">Review permissions</button>
+                  <button type="button" id="sign-out-btn" class="px-3.5 py-2 rounded-[10px] text-xs btn-primary">Sign out</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-6 space-y-4 neo-panel">
+              <h2 class="font-serif-display text-xl font-bold">Archive management</h2>
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <button type="button" id="export-data-btn" class="px-4 py-2.5 rounded-[10px] text-sm btn-secondary">Export data (JSON)</button>
+                <button type="button" id="reset-demo-data-btn" class="px-4 py-2.5 rounded-[10px] text-sm btn-secondary">Restore sample archive</button>
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      // ----------------------------------------------------------------------
+      // CERTIFICATE MODAL
+      // ----------------------------------------------------------------------
+      function openCertificateModal(record) {
+        if (!record) return;
+        const modal = document.getElementById('certificate-modal');
+        document.getElementById('modal-title').textContent = record.title;
+        document.getElementById('modal-subtitle').textContent = `${record.sourceType} • Saved ${record.savedAt}`;
+        document.getElementById('modal-footer-note').textContent = `Scheduled for ${record.dueDateDisplay} (${record.reminderTiming})`;
+        document.getElementById('modal-body').innerHTML = `
+          <div class="pb-3 border-b flex items-start justify-between gap-2" style="border-color: var(--panel-border);">
+            <div>
+              <p class="font-serif-display text-lg font-bold">${escapeHtml(record.docHeader || record.title)}</p>
+              <p class="text-xs mt-0.5 neo-muted">${escapeHtml(record.docSubheader || record.issuer)}</p>
+            </div>
+            <span class="text-xs font-mono px-2.5 py-1 neo-subpanel neo-muted">${escapeHtml(record.referenceCode || 'CERT-2026')}</span>
+          </div>
+          <div class="space-y-3">
+            ${(record.sections || []).map((s) => `<div class="p-3.5 rounded-[10px] border" style="background-color: var(--highlight-green-bg); border-color: var(--highlight-green-border);"><span class="block text-xs font-medium mb-1 neo-muted">${escapeHtml(s.label)}</span><p class="text-sm font-medium">${escapeHtml(s.text)}</p></div>`).join('')}
+          </div>
+        `;
+        const card = document.getElementById('certificate-modal-card');
+        if (card && !prefersReducedMotion) {
+          card.classList.remove('modal-enter');
+          void card.offsetWidth;
+          card.classList.add('modal-enter');
+        }
+        modal.classList.remove('hidden');
+      }
+
+      function closeCertificateModal() {
+        document.getElementById('certificate-modal').classList.add('hidden');
+      }
+
+      // ----------------------------------------------------------------------
+      // BIND DASHBOARD EVENTS
+      // ----------------------------------------------------------------------
+      function bindDashboardEvents() {
+        document.querySelectorAll('[data-go-route]').forEach((btn) => {
+          btn.addEventListener('click', () => navigateTo(btn.getAttribute('data-go-route')));
+        });
+
+        document.querySelectorAll('[data-app-tab]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const tab = btn.getAttribute('data-app-tab');
+            if (tab === 'add') resetScanState();
+            navigateTo('app', tab);
+          });
+        });
+
+        const t1 = document.getElementById('dash-theme-toggle');
+        const t2 = document.getElementById('dash-mobile-theme-toggle');
+        const toggleTheme = () => { state.lightMode = !state.lightMode; render(); };
+        if (t1) t1.addEventListener('click', toggleTheme);
+        if (t2) t2.addEventListener('click', toggleTheme);
+
+        const mobileMenuBtn = document.getElementById('dash-mobile-menu-btn');
+        if (mobileMenuBtn) {
+          mobileMenuBtn.addEventListener('click', () => {
+            state.mobileMenuOpen = !state.mobileMenuOpen;
+            render();
+          });
+        }
+
+        // Today tab events
+        const todayAdd = document.getElementById('today-add-btn');
+        if (todayAdd) todayAdd.addEventListener('click', () => { resetScanState(); navigateTo('app', 'add'); });
+
+        document.querySelectorAll('[data-select-ring-id], [data-select-row-id]').forEach((el) => {
+          el.addEventListener('click', () => {
+            state.selectedRingItemId = el.getAttribute('data-select-ring-id') || el.getAttribute('data-select-row-id');
+            render();
+          });
+        });
+
+        const markPaid = document.getElementById('mark-paid-btn');
+        if (markPaid) {
+          markPaid.addEventListener('click', () => {
+            const id = markPaid.getAttribute('data-mark-paid-id');
+            state.records = state.records.filter((r) => r.id !== id);
+            const next = getSortedRecords();
+            state.selectedRingItemId = next[0] ? next[0].id : null;
+            showToast('Marked as paid');
+            render();
+          });
+        }
+
+        // Add tab events
+        document.querySelectorAll('[data-add-tab]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const nextTab = btn.getAttribute('data-add-tab');
+            if (nextTab === state.addInputTab) return;
+            state.addInputTab = nextTab;
+            state.animateNext = 'step';
+            render();
+          });
+        });
+
+        ['scan-sample-btn', 'scan-sample-from-text-btn', 'scan-sample-from-voice-btn'].forEach((id) => {
+          const btn = document.getElementById(id);
+          if (btn) btn.addEventListener('click', () => startLiveScan({ ...SAMPLE_BESCOM_BILL }));
+        });
+
+        const chooseFile = document.getElementById('choose-file-btn');
+        const fileInput = document.getElementById('file-upload-input');
+        if (chooseFile && fileInput) {
+          chooseFile.addEventListener('click', () => fileInput.click());
+          fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const title = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ') || 'Uploaded Bill';
+            startLiveScan({ ...SAMPLE_BESCOM_BILL, id: `scan-${Date.now()}`, title });
+          });
+        }
+
+        const fillSample = document.getElementById('fill-sample-text-btn');
+        if (fillSample) {
+          fillSample.addEventListener('click', () => {
+            state.pastedText = 'BESCOM Electricity Supply — Account ID: 849201742. Billing Period: Nov 2026. Amount Due: ₹3,420.00. Due Date: 12/12/2026 (Cutoff: 11 Dec 2026).';
+            render();
+          });
+        }
+
+        const pasteArea = document.getElementById('paste-doc-textarea');
+        if (pasteArea) pasteArea.addEventListener('input', (e) => { state.pastedText = e.target.value; });
+
+        const extractBtn = document.getElementById('extract-text-btn');
+        if (extractBtn) {
+          extractBtn.addEventListener('click', () => {
+            if (state.pastedText.trim().length < 8) {
+              state.uploadError = 'Paste a bill or confirmation snippet first.';
+              render();
+              return;
+            }
+            startLiveScan({ ...SAMPLE_BESCOM_BILL, id: `scan-txt-${Date.now()}`, sourceType: 'Pasted Text' });
+          });
+        }
+
+        const voiceBtn = document.getElementById('toggle-voice-btn');
+        if (voiceBtn) {
+          voiceBtn.addEventListener('click', () => {
+            if (!state.isRecording) {
+              state.isRecording = true;
+              state.recordingSeconds = 0;
+              recordingInterval = setInterval(() => { state.recordingSeconds += 1; render(); }, 1000);
+              render();
+            } else {
+              state.isRecording = false;
+              clearInterval(recordingInterval);
+              startLiveScan({ ...SAMPLE_BESCOM_BILL, id: `scan-voice-${Date.now()}`, sourceType: 'Voice Note' });
+            }
+          });
+        }
+
+        document.querySelectorAll('[data-date-choice-id]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const c = state.scanDoc.choices.find((x) => x.id === btn.getAttribute('data-date-choice-id'));
+            if (c) { state.selectedChoiceId = c.id; state.draftDueDate = c.dueDate; render(); }
+          });
+        });
+
+        const issuerIn = document.getElementById('draft-issuer-input');
+        if (issuerIn) issuerIn.addEventListener('input', (e) => { state.draftIssuer = e.target.value; });
+        const catSel = document.getElementById('draft-category-select');
+        if (catSel) catSel.addEventListener('change', (e) => { state.draftCategory = e.target.value; });
+        const amtIn = document.getElementById('draft-amount-input');
+        if (amtIn) amtIn.addEventListener('input', (e) => { state.draftAmount = e.target.value; });
+        const dueIn = document.getElementById('draft-duedate-input');
+        if (dueIn) dueIn.addEventListener('change', (e) => { state.draftDueDate = e.target.value; state.selectedChoiceId = 'manual'; render(); });
+
+        const approveBtn = document.getElementById('approve-reminder-btn');
+        if (approveBtn) {
+          approveBtn.addEventListener('click', () => {
+            const chosen = state.scanDoc.choices.find((c) => c.id === state.selectedChoiceId);
+            const daysFromToday = chosen ? chosen.daysFromToday : calculateDaysFromRefToday(state.draftDueDate);
+            const dueDateDisplay = chosen ? chosen.dueDateDisplay : formatDisplayDate(state.draftDueDate);
+            const newRec = {
+              id: `rec-${Date.now()}`,
+              title: state.scanDoc.title,
+              issuer: state.draftIssuer.trim(),
+              amount: state.draftAmount.trim(),
+              numericAmount: parseInt(String(state.draftAmount).replace(/[^\d]/g, ''), 10) || 0,
+              dueDate: state.draftDueDate,
+              dueDateDisplay,
+              daysFromToday,
+              category: state.draftCategory,
+              status: 'Confirmed',
+              reminderTiming: state.draftReminderTiming,
+              sourceType: state.scanDoc.sourceType,
+              savedAt: '26 Nov 2026',
+              docHeader: `${state.draftIssuer.trim()} — Statement`,
+              docSubheader: `${state.scanDoc.accountNumber} • ${state.scanDoc.billingPeriod}`,
+              referenceCode: 'CERT-2026-8492',
+              sections: [
+                { label: 'Issuing authority', text: state.draftIssuer.trim() },
+                { label: 'Amount payable', text: state.draftAmount.trim() },
+                { label: 'Confirmed due date', text: `${dueDateDisplay} (${daysFromToday} days from today)` }
+              ],
+              snippet: `${state.scanDoc.title} from ${state.draftIssuer.trim()} for ${state.draftAmount.trim()} due on ${dueDateDisplay}.`
+            };
+            state.records.unshift(newRec);
+            state.selectedRingItemId = newRec.id;
+            resetScanState();
+            showToast('Reminder approved');
+            navigateTo('app', 'today');
+          });
+        }
+
+        const dismissBtn = document.getElementById('dismiss-scan-btn');
+        if (dismissBtn) dismissBtn.addEventListener('click', () => { resetScanState(); render(); });
+
+        // Vault tab events
+        const vaultSearch = document.getElementById('vault-search-input');
+        if (vaultSearch) {
+          vaultSearch.addEventListener('input', (e) => {
+            state.vaultSearch = e.target.value;
+            render();
+            const refreshed = document.getElementById('vault-search-input');
+            if (refreshed) { refreshed.focus(); refreshed.setSelectionRange(refreshed.value.length, refreshed.value.length); }
+          });
+        }
+        document.querySelectorAll('[data-vault-filter]').forEach((btn) => {
+          btn.addEventListener('click', () => { state.vaultFilter = btn.getAttribute('data-vault-filter'); render(); });
+        });
+        document.querySelectorAll('[data-open-original-id]').forEach((btn) => {
+          btn.addEventListener('click', () => openCertificateModal(state.records.find((r) => r.id === btn.getAttribute('data-open-original-id'))));
+        });
+
+        // Ask LOOP events
+        const askForm = document.getElementById('ask-loop-form');
+        const askIn = document.getElementById('ask-loop-input');
+        if (askIn) askIn.addEventListener('input', (e) => { state.askQuery = e.target.value; });
+        if (askForm) askForm.addEventListener('submit', (e) => { e.preventDefault(); executeGroundedAsk(); });
+        document.querySelectorAll('[data-ask-preset]').forEach((btn) => {
+          btn.addEventListener('click', () => executeGroundedAsk(btn.getAttribute('data-ask-preset')));
+        });
+        const askOpenSrc = document.getElementById('ask-open-source-btn');
+        if (askOpenSrc) askOpenSrc.addEventListener('click', () => openCertificateModal(state.records.find((r) => r.id === askOpenSrc.getAttribute('data-open-source-id'))));
+
+        // Settings events
+        const signOutBtn = document.getElementById('sign-out-btn');
+        if (signOutBtn) {
+          signOutBtn.addEventListener('click', async () => {
+            if (state.backendAvailable) {
+              try {
+                await apiFetch('/api/v1/auth/logout', { method: 'POST' });
+              } catch (_e) {}
+            } else {
+              savePreviewSession(null);
+            }
+            state.isAuthenticated = false;
+            state.permissionsGranted = false;
+            state.authPasswordInput = '';
+            state.userEmail = '';
+            showToast('Signed out');
+            navigateTo('landing');
+          });
+        }
+
+        const exportBtn = document.getElementById('export-data-btn');
+        if (exportBtn) {
+          exportBtn.addEventListener('click', () => {
+            const blob = new Blob([JSON.stringify({ exportedAt: '2026-11-26', user: state.userEmail, records: state.records }, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'loop-archive-2026-11-26.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Archive exported as JSON');
+          });
+        }
+
+        const resetDemoBtn = document.getElementById('reset-demo-data-btn');
+        if (resetDemoBtn) {
+          resetDemoBtn.addEventListener('click', () => {
+            state.records = [...INITIAL_RECORDS];
+            state.selectedRingItemId = INITIAL_RECORDS[0].id;
+            showToast('Sample archive restored');
+            render();
+          });
+        }
+      }
+
+      // ----------------------------------------------------------------------
+      // MASTER RENDER
+      // ----------------------------------------------------------------------
+      function render() {
+        syncTheme();
+        const root = document.getElementById('root-app');
+        const animKind = state.animateNext;
+        state.animateNext = null;
+
+        if (state.route === 'landing') {
+          root.innerHTML = renderLandingPage();
+          bindLandingEvents();
+        } else if (state.route === 'login') {
+          root.innerHTML = renderAuthPage('login');
+          bindAuthEvents('login');
+        } else if (state.route === 'signup') {
+          root.innerHTML = renderAuthPage('signup');
+          bindAuthEvents('signup');
+        } else if (state.route === 'permissions') {
+          root.innerHTML = renderPermissionsPage();
+          bindPermissionsEvents();
+        } else {
+          let tabHtml = '';
+          if (state.appTab === 'today') tabHtml = renderTodayTab();
+          else if (state.appTab === 'add') tabHtml = renderAddTab();
+          else if (state.appTab === 'vault') tabHtml = renderVaultTab();
+          else if (state.appTab === 'ask') tabHtml = renderAskTab();
+          else if (state.appTab === 'settings') tabHtml = renderSettingsTab();
+
+          root.innerHTML = renderDashboardShell(tabHtml);
+          bindDashboardEvents();
+        }
+
+        if (!prefersReducedMotion && animKind) {
+          if (animKind === 'page' && root.firstElementChild) {
+            root.firstElementChild.classList.add('page-enter');
+          } else if (animKind === 'tab' || animKind === 'step') {
+            const tabStage = document.getElementById('dash-tab-stage');
+            if (tabStage && tabStage.firstElementChild) {
+              tabStage.firstElementChild.classList.add(animKind === 'tab' ? 'tab-enter' : 'step-enter');
+            }
+          }
+        }
+      }
+
+      // Modal close wiring
+      document.getElementById('modal-close-top').addEventListener('click', closeCertificateModal);
+      document.getElementById('modal-close-bottom').addEventListener('click', closeCertificateModal);
+      document.getElementById('certificate-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'certificate-modal') closeCertificateModal();
+      });
+
+      window.addEventListener('hashchange', () => {
+        syncFromHash();
+        state.animateNext = 'page';
+        render();
+      });
+
+      // Boot
+      syncFromHash();
+      applyOAuthErrorFromHash();
+      render();
+      hydrateSessionOnBoot();
+    })();
+  </script>
+</body>
+</html>
