@@ -1,0 +1,2617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LOOP — Personal Archive &amp; Reminders</title>
+
+  <!-- Google Fonts: Cormorant Garamond (600/700) & Hanken Grotesk (400/500/600/700) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Supabase JS Client (v2) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Your 3-line public config file -->
+  <script src="./config.js"></script>
+
+  <style>
+    :root {
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-sans: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+
+      /* Dark-first Neoclassical Navy & Antique Brass */
+      --bg-page: #0A1228;
+      --text-primary: #EDEFF5;
+      --text-muted: #9AA6C0;
+      --panel-bg: rgba(16, 27, 58, 0.88);
+      --panel-border: #26365F;
+      --subpanel-bg: rgba(10, 18, 40, 0.86);
+      --subpanel-border: #26365F;
+      --brass-accent: #D4AE5E;
+      --brass-soft: rgba(212, 174, 94, 0.14);
+      --brass-border: rgba(212, 174, 94, 0.44);
+      --verdigris: #6CCBB2;
+      --verdigris-soft: rgba(108, 203, 178, 0.14);
+      --input-bg: rgba(10, 18, 40, 0.94);
+      --input-border: #26365F;
+      --btn-primary-bg: #D4AE5E;
+      --btn-primary-hover: #E0BE74;
+      --btn-primary-text: #0A1228;
+      --btn-secondary-bg: rgba(16, 27, 58, 0.88);
+      --btn-secondary-text: #EDEFF5;
+      --amber-card-bg: #271E12;
+      --amber-card-border: #D4AE5E;
+      --highlight-green-bg: rgba(22, 48, 43, 0.82);
+      --highlight-green-border: #6CCBB2;
+      --highlight-brass-bg: rgba(45, 34, 18, 0.9);
+      --highlight-brass-border: #D4AE5E;
+      --danger-border: rgba(248, 113, 113, 0.55);
+      --danger-bg: rgba(127, 29, 29, 0.25);
+      --danger-text: #FCA5A5;
+    }
+
+    html.light {
+      /* Light Marble & Antique Brass */
+      --bg-page: #ECEFF2;
+      --text-primary: #101B33;
+      --text-muted: #4E5B78;
+      --panel-bg: rgba(255, 255, 255, 0.84);
+      --panel-border: #CBD3E1;
+      --subpanel-bg: rgba(246, 248, 250, 0.94);
+      --subpanel-border: #CBD3E1;
+      --brass-accent: #A67C2E;
+      --brass-soft: rgba(166, 124, 46, 0.12);
+      --brass-border: rgba(166, 124, 46, 0.45);
+      --verdigris: #1E8A6E;
+      --verdigris-soft: rgba(30, 138, 110, 0.12);
+      --input-bg: rgba(255, 255, 255, 0.96);
+      --input-border: #CBD3E1;
+      --btn-primary-bg: #A67C2E;
+      --btn-primary-hover: #8E6822;
+      --btn-primary-text: #FFFFFF;
+      --btn-secondary-bg: rgba(255, 255, 255, 0.94);
+      --btn-secondary-text: #101B33;
+      --amber-card-bg: #FDF6E7;
+      --amber-card-border: #A67C2E;
+      --highlight-green-bg: rgba(30, 138, 110, 0.11);
+      --highlight-green-border: #1E8A6E;
+      --highlight-brass-bg: #FDF6E7;
+      --highlight-brass-border: #A67C2E;
+      --danger-border: rgba(220, 38, 38, 0.45);
+      --danger-bg: rgba(254, 226, 226, 0.65);
+      --danger-text: #991B1B;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-sans);
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      transition: background-color 0.22s ease, color 0.22s ease;
+    }
+
+    .font-serif-display { font-family: var(--font-serif); }
+
+    .fluted-surface {
+      background-image: repeating-linear-gradient(
+        90deg,
+        rgba(212, 174, 94, 0.035) 0px,
+        rgba(212, 174, 94, 0.035) 1px,
+        transparent 1px,
+        transparent 18px,
+        rgba(255, 255, 255, 0.018) 18px,
+        rgba(255, 255, 255, 0.018) 28px,
+        transparent 28px,
+        transparent 44px
+      );
+    }
+
+    html.light .fluted-surface {
+      background-image: repeating-linear-gradient(
+        90deg,
+        rgba(166, 124, 46, 0.045) 0px,
+        rgba(166, 124, 46, 0.045) 1px,
+        transparent 1px,
+        transparent 18px,
+        rgba(16, 27, 51, 0.025) 18px,
+        rgba(16, 27, 51, 0.025) 28px,
+        transparent 28px,
+        transparent 44px
+      );
+    }
+
+    .fluted-navy-sidebar {
+      background-color: #0A1228;
+      background-image: repeating-linear-gradient(
+        90deg,
+        rgba(212, 174, 94, 0.04) 0px,
+        rgba(212, 174, 94, 0.04) 1px,
+        transparent 1px,
+        transparent 18px,
+        rgba(255, 255, 255, 0.02) 18px,
+        rgba(255, 255, 255, 0.02) 28px,
+        transparent 28px,
+        transparent 44px
+      );
+    }
+
+    .neo-panel {
+      background-color: var(--panel-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+    }
+
+    .neo-subpanel {
+      background-color: var(--subpanel-bg);
+      border: 1px solid var(--subpanel-border);
+      border-radius: 12px;
+    }
+
+    .neo-muted { color: var(--text-muted); }
+    .neo-brass-text { color: var(--brass-accent); }
+    .neo-verdigris-text { color: var(--verdigris); }
+    .neoclassical-arch { border-radius: 9999px 9999px 16px 16px; }
+
+    .btn-primary {
+      background-color: var(--btn-primary-bg);
+      color: var(--btn-primary-text);
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.15s ease, transform 0.12s ease, opacity 0.15s ease;
+    }
+    .btn-primary:hover:not(:disabled) { background-color: var(--btn-primary-hover); }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-secondary {
+      background-color: var(--btn-secondary-bg);
+      color: var(--btn-secondary-text);
+      border: 1px solid var(--input-border);
+      font-weight: 500;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+    }
+    .btn-secondary:hover:not(:disabled) { border-color: var(--brass-accent); }
+    .btn-secondary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .neo-input {
+      background-color: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--text-primary);
+    }
+    .neo-input::placeholder { color: var(--text-muted); opacity: 0.72; }
+
+    .pricing-card-glow {
+      border-color: var(--panel-border);
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .pricing-card-glow:hover {
+      border-color: var(--brass-accent) !important;
+      box-shadow: 0 0 32px rgba(212, 174, 94, 0.22);
+    }
+
+    .pricing-card-plus {
+      border-color: var(--brass-border);
+      box-shadow: 0 0 22px rgba(212, 174, 94, 0.10);
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .pricing-card-plus:hover {
+      border-color: var(--brass-accent) !important;
+      box-shadow: 0 0 36px rgba(212, 174, 94, 0.26);
+    }
+
+    @keyframes scanSweepLoop {
+      0% { top: 4%; opacity: 0.95; }
+      50% { top: 92%; opacity: 0.95; }
+      100% { top: 4%; opacity: 0.95; }
+    }
+
+    .scan-beam-loop {
+      position: absolute;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      pointer-events: none;
+      animation: scanSweepLoop 2.2s ease-in-out infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .scan-beam-loop { animation: none !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen fluted-surface">
+
+  <!-- ROOT CONTAINER -->
+  <div id="root-app"></div>
+
+  <!-- CERTIFICATE MODAL ("Open original" / "Open source") -->
+  <div
+    id="certificate-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-title"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A1228]/75 backdrop-blur-xs"
+  >
+    <div class="w-full max-w-xl neo-panel shadow-2xl overflow-hidden">
+      <div class="pt-2 px-2">
+        <div class="border-t-[4px] border-double" style="border-color: var(--brass-accent);"></div>
+      </div>
+      <div class="px-6 py-4 border-b flex items-center justify-between gap-3" style="border-color: var(--panel-border);">
+        <div>
+          <h2 id="modal-title" class="font-serif-display text-2xl font-bold"></h2>
+          <p id="modal-subtitle" class="text-xs mt-0.5 neo-muted"></p>
+        </div>
+        <button type="button" id="modal-close-top" aria-label="Close certificate preview" class="p-2 rounded-lg btn-secondary">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div id="modal-body" class="p-6 space-y-4 max-h-[70vh] overflow-y-auto"></div>
+      <div class="px-6 py-3.5 border-t flex items-center justify-between gap-3" style="border-color: var(--panel-border);">
+        <span id="modal-footer-note" class="text-xs neo-muted"></span>
+        <div class="flex items-center gap-2">
+          <a id="modal-original-link" href="#" target="_blank" rel="noopener noreferrer" class="hidden px-3.5 py-2 rounded-[10px] text-xs btn-secondary">
+            View uploaded file ↗
+          </a>
+          <button type="button" id="modal-close-bottom" class="px-4 py-2 rounded-[10px] text-xs btn-primary">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PILOT FEEDBACK MODAL -->
+  <div
+    id="feedback-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="feedback-modal-title"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A1228]/75 backdrop-blur-xs"
+  >
+    <div class="w-full max-w-md neo-panel shadow-2xl overflow-hidden">
+      <div class="px-6 py-4 border-b flex items-center justify-between" style="border-color: var(--panel-border);">
+        <div>
+          <h2 id="feedback-modal-title" class="font-serif-display text-2xl font-bold">Pilot feedback</h2>
+          <p class="text-xs neo-muted mt-0.5">Tell us what worked well or what felt confusing.</p>
+        </div>
+        <button type="button" id="feedback-close-btn" class="p-2 rounded-lg btn-secondary text-xs">✕</button>
+      </div>
+      <form id="feedback-form" class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-medium mb-2 neo-muted">How is your experience so far?</label>
+          <div id="feedback-stars" class="flex items-center gap-2">
+            <button type="button" data-star="1" class="px-3 py-1.5 rounded-lg text-xs btn-secondary">1 ★</button>
+            <button type="button" data-star="2" class="px-3 py-1.5 rounded-lg text-xs btn-secondary">2 ★</button>
+            <button type="button" data-star="3" class="px-3 py-1.5 rounded-lg text-xs btn-secondary">3 ★</button>
+            <button type="button" data-star="4" class="px-3 py-1.5 rounded-lg text-xs btn-secondary">4 ★</button>
+            <button type="button" data-star="5" class="px-3 py-1.5 rounded-lg text-xs btn-primary">5 ★</button>
+          </div>
+        </div>
+        <div>
+          <label for="feedback-message" class="block text-xs font-medium mb-1.5 neo-muted">Your note</label>
+          <textarea id="feedback-message" rows="4" required placeholder="Example: Date scanning worked great on my electricity bill, would love WhatsApp alerts too..." class="w-full px-3.5 py-2.5 rounded-xl text-sm neo-input"></textarea>
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-1">
+          <button type="button" id="feedback-cancel-btn" class="px-4 py-2 rounded-[10px] text-xs btn-secondary">Cancel</button>
+          <button type="submit" id="feedback-submit-btn" class="px-4 py-2 rounded-[10px] text-xs btn-primary">Send feedback</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- WAITLIST MODAL -->
+  <div
+    id="waitlist-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="waitlist-modal-title"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A1228]/75 backdrop-blur-xs"
+  >
+    <div class="w-full max-w-md neo-panel shadow-2xl overflow-hidden">
+      <div class="px-6 py-4 border-b flex items-center justify-between" style="border-color: var(--panel-border);">
+        <div>
+          <h2 id="waitlist-modal-title" class="font-serif-display text-2xl font-bold">Join early access</h2>
+          <p id="waitlist-modal-tier-label" class="text-xs neo-brass-text mt-0.5"></p>
+        </div>
+        <button type="button" id="waitlist-close-btn" class="p-2 rounded-lg btn-secondary text-xs">✕</button>
+      </div>
+      <form id="waitlist-form" class="p-6 space-y-4">
+        <p class="text-xs neo-muted">Leave your email and we’ll notify you first when paid plans launch—with early pilot pricing.</p>
+        <div>
+          <label for="waitlist-email-input" class="block text-xs font-medium mb-1.5 neo-muted">Email address</label>
+          <input id="waitlist-email-input" type="email" required placeholder="you@domain.in" class="w-full px-3.5 py-2.5 rounded-xl text-sm neo-input" />
+        </div>
+        <div class="flex items-center justify-end gap-2">
+          <button type="button" id="waitlist-cancel-btn" class="px-4 py-2 rounded-[10px] text-xs btn-secondary">Cancel</button>
+          <button type="submit" id="waitlist-submit-btn" class="px-4 py-2 rounded-[10px] text-xs btn-primary">Join waitlist</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION BANNER -->
+  <div
+    id="toast-banner"
+    role="status"
+    aria-live="polite"
+    class="hidden fixed bottom-5 right-5 z-50 flex items-center gap-2.5 px-4 py-3 rounded-[12px] bg-[#101B3A] border border-[#D4AE5E] text-[#EDEFF5] shadow-xl text-sm font-medium max-w-sm"
+  >
+    <svg class="w-4 h-4 text-[#6CCBB2] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+      <polyline points="22 4 12 14.01 9 11.01" />
+    </svg>
+    <span id="toast-message">Action completed</span>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const CONFIG = window.LOOP_CONFIG || {};
+      const SUPABASE_URL = (CONFIG.SUPABASE_URL || '').trim();
+      const SUPABASE_ANON_KEY = (CONFIG.SUPABASE_ANON_KEY || '').trim();
+      const API_BASE_URL = (CONFIG.API_BASE_URL || '').replace(/\/+$/, '');
+
+      const isConfigured =
+        SUPABASE_URL &&
+        SUPABASE_ANON_KEY &&
+        API_BASE_URL &&
+        !SUPABASE_URL.includes('YOUR_PROJECT_ID') &&
+        !SUPABASE_ANON_KEY.includes('YOUR_SUPABASE_ANON_KEY') &&
+        !API_BASE_URL.includes('YOUR_RENDER_BACKEND');
+
+      let supabaseClient = null;
+      if (isConfigured && window.supabase) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // ----------------------------------------------------------------------
+      // DYNAMIC IST DATE HELPERS
+      // ----------------------------------------------------------------------
+      function getTodayIST() {
+        const now = new Date();
+        const istOffsetMs = 5.5 * 60 * 60 * 1000;
+        const utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+        return new Date(utcMs + istOffsetMs);
+      }
+
+      function getTodayGreeting() {
+        const d = getTodayIST();
+        const hour = d.getHours();
+        const part = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+        const formatted = d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
+        return `${part}, ${formatted}`;
+      }
+
+      function getTodayShortIST() {
+        const d = getTodayIST();
+        return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+      }
+
+      function formatDisplayDate(isoDate) {
+        if (!isoDate) return '';
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const parts = String(isoDate).split('-').map(Number);
+        if (parts.length !== 3 || parts.some(isNaN)) return isoDate;
+        return `${parts[2]} ${months[parts[1] - 1]} ${parts[0]}`;
+      }
+
+      function formatShortSavedDate(isoString) {
+        if (!isoString) return getTodayShortIST();
+        const d = new Date(isoString);
+        if (isNaN(d.getTime())) return getTodayShortIST();
+        return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+      }
+
+      // ----------------------------------------------------------------------
+      // APPLICATION STATE
+      // ----------------------------------------------------------------------
+      const state = {
+        booting: true,
+        route: 'landing', // 'landing' | 'login' | 'signup' | 'permissions' | 'app'
+        appTab: 'today',  // 'today' | 'add' | 'vault' | 'ask' | 'settings'
+        lightMode: false,
+        mobileMenuOpen: false,
+
+        // Auth & Profile
+        session: null,
+        isAuthenticated: false,
+        userName: '',
+        userEmail: '',
+        planTier: 'free_pilot',
+        maxActiveRecords: 25,
+        authEmailInput: '',
+        authPasswordInput: '',
+        authConsentChecked: false,
+        authErrors: {},
+        authLoading: false,
+        authNotice: '',
+
+        // Permissions
+        permissionsGranted: false,
+        permissionsSaving: false,
+        permissions: {
+          documentAccess: true,
+          notifications: true,
+          microphone: false,
+          leadTime: '2 days before'
+        },
+
+        // Landing widgets
+        landingAmbiguousChoice: null,
+        openFaqIndex: 0,
+        waitlistMessage: '',
+        activeWaitlistTier: 'LOOP Plus',
+
+        // Vault Records (live from FastAPI / Supabase)
+        records: [],
+        recordsLoading: false,
+        selectedRingItemId: null,
+
+        // Add Document & Live AI Extraction
+        addInputTab: 'file',
+        uploadError: '',
+        pastedText: '',
+        isRecording: false,
+        recordingSeconds: 0,
+        isScanning: false,
+        scanResult: null, // { extracted, file_path, source_type }
+        selectedChoiceId: null,
+        draftTitle: '',
+        draftIssuer: '',
+        draftCategory: 'Bill',
+        draftAmount: '',
+        draftDueDate: '',
+        draftReminderTiming: '2 days before',
+        isApproving: false,
+
+        // Vault Search & Filter
+        vaultSearch: '',
+        vaultFilter: 'All',
+
+        // Ask LOOP
+        askQuery: '',
+        askLoading: false,
+        askResult: null,
+
+        // Settings
+        confirmDeleteAll: false,
+        deletingAll: false,
+
+        // Pilot Feedback Modal
+        feedbackRating: 5
+      };
+
+      let mediaRecorder = null;
+      let audioChunks = [];
+      let recordingInterval = null;
+      let toastTimeout = null;
+
+      // ----------------------------------------------------------------------
+      // CORE HELPERS & API CLIENT
+      // ----------------------------------------------------------------------
+      function escapeHtml(str) {
+        return String(str ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function showToast(message) {
+        const banner = document.getElementById('toast-banner');
+        const msgEl = document.getElementById('toast-message');
+        msgEl.textContent = message;
+        banner.classList.remove('hidden');
+        if (toastTimeout) clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => banner.classList.add('hidden'), 3800);
+      }
+
+      function syncTheme() {
+        document.documentElement.classList.toggle('light', state.lightMode);
+      }
+
+      async function apiFetch(path, options = {}) {
+        if (!API_BASE_URL || API_BASE_URL.includes('YOUR_RENDER_BACKEND')) {
+          throw new Error('Backend URL is not configured in config.js yet.');
+        }
+
+        const headers = Object.assign({}, options.headers || {});
+        if (state.session && state.session.access_token) {
+          headers['Authorization'] = `Bearer ${state.session.access_token}`;
+        }
+        if (!(options.body instanceof FormData) && options.body && !headers['Content-Type']) {
+          headers['Content-Type'] = 'application/json';
+        }
+
+        const response = await fetch(`${API_BASE_URL}${path}`, {
+          ...options,
+          headers
+        });
+
+        let data = null;
+        try {
+          data = await response.json();
+        } catch (_) {
+          data = null;
+        }
+
+        if (!response.ok) {
+          const msg = (data && (data.detail || data.message)) || `Request failed (${response.status})`;
+          throw new Error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+        }
+        return data;
+      }
+
+      async function loadUserWorkspace() {
+        state.recordsLoading = true;
+        render();
+        try {
+          const profile = await apiFetch('/api/me');
+          state.userEmail = profile.email || state.userEmail;
+          state.userName = profile.full_name || state.userEmail.split('@')[0] || 'Member';
+          state.planTier = profile.plan_tier || 'free_pilot';
+          state.maxActiveRecords = profile.max_active_records || 25;
+          state.permissionsGranted = Boolean(profile.permissions_granted);
+          if (profile.permissions) {
+            state.permissions = Object.assign({}, state.permissions, profile.permissions);
+            state.draftReminderTiming = state.permissions.leadTime || '2 days before';
+          }
+
+          if (state.permissionsGranted) {
+            const recs = await apiFetch('/api/records');
+            state.records = Array.isArray(recs) ? recs : [];
+            state.selectedRingItemId = state.records[0] ? state.records[0].id : null;
+          }
+        } catch (err) {
+          showToast(err.message || 'Could not load your archive. Server may be waking up.');
+        } finally {
+          state.recordsLoading = false;
+        }
+      }
+
+      // ----------------------------------------------------------------------
+      // ROUTER
+      // ----------------------------------------------------------------------
+      function navigateTo(targetRoute, targetAppTab) {
+        if (targetAppTab) state.appTab = targetAppTab;
+
+        if (targetRoute === 'app') {
+          if (!state.isAuthenticated) {
+            state.route = 'login';
+            history.replaceState(null, '', '#/login');
+            render();
+            window.scrollTo({ top: 0, behavior: 'auto' });
+            return;
+          }
+          if (!state.permissionsGranted) {
+            state.route = 'permissions';
+            history.replaceState(null, '', '#/permissions');
+            render();
+            window.scrollTo({ top: 0, behavior: 'auto' });
+            return;
+          }
+        }
+
+        if (targetRoute === 'permissions' && !state.isAuthenticated) {
+          state.route = 'login';
+          history.replaceState(null, '', '#/login');
+          render();
+          window.scrollTo({ top: 0, behavior: 'auto' });
+          return;
+        }
+
+        state.route = targetRoute;
+        state.mobileMenuOpen = false;
+
+        const hashMap = {
+          landing: '#/',
+          login: '#/login',
+          signup: '#/signup',
+          permissions: '#/permissions',
+          app: state.appTab === 'today' ? '#/app' : `#/app/${state.appTab}`
+        };
+        const nextHash = hashMap[targetRoute] || '#/';
+        if (window.location.hash !== nextHash) {
+          history.replaceState(null, '', nextHash);
+        }
+
+        render();
+        window.scrollTo({ top: 0, behavior: 'auto' });
+      }
+
+      function syncFromHash() {
+        const raw = (window.location.hash || '#/').replace(/^#/, '');
+        if (raw === '/signup') {
+          state.route = state.isAuthenticated ? (state.permissionsGranted ? 'app' : 'permissions') : 'signup';
+        } else if (raw === '/login') {
+          state.route = state.isAuthenticated ? (state.permissionsGranted ? 'app' : 'permissions') : 'login';
+        } else if (raw === '/permissions') {
+          state.route = state.isAuthenticated ? 'permissions' : 'login';
+        } else if (raw.startsWith('/app')) {
+          const sub = raw.split('/')[2] || 'today';
+          if (['today', 'add', 'vault', 'ask', 'settings'].includes(sub)) state.appTab = sub;
+          if (!state.isAuthenticated) state.route = 'login';
+          else if (!state.permissionsGranted) state.route = 'permissions';
+          else state.route = 'app';
+        } else {
+          state.route = 'landing';
+        }
+      }
+
+      function logoSvgHtml(sizeClass = 'w-8 h-9') {
+        return `
+          <svg viewBox="0 0 36 42" fill="none" class="${sizeClass} shrink-0" aria-hidden="true">
+            <path d="M3 39V17C3 8.71573 9.71573 2 18 2C26.2843 2 33 8.71573 33 17V39H3Z" stroke="var(--brass-accent)" stroke-width="2" />
+            <path d="M9.5 39V17.5C9.5 12.8056 13.3056 9 18 9C22.6944 9 26.5 12.8056 26.5 17.5V39" stroke="var(--brass-accent)" stroke-width="1.35" stroke-opacity="0.85" />
+            <circle cx="18" cy="17.5" r="2" fill="var(--brass-accent)" />
+          </svg>
+        `;
+      }
+
+      function getSortedRecords() {
+        return [...state.records].sort((a, b) => (a.daysFromToday ?? 999) - (b.daysFromToday ?? 999));
+      }
+
+      function getCategoryBadgeHtml(category) {
+        if (category === 'Bill') {
+          return `<span class="text-xs font-medium px-2.5 py-0.5 rounded-full border" style="background-color: var(--brass-soft); color: var(--brass-accent); border-color: var(--brass-border);">${escapeHtml(category)}</span>`;
+        }
+        if (category === 'Booking') {
+          return `<span class="text-xs font-medium px-2.5 py-0.5 rounded-full border" style="background-color: rgba(154,166,192,0.12); color: var(--text-primary); border-color: var(--panel-border);">${escapeHtml(category)}</span>`;
+        }
+        return `<span class="text-xs font-medium px-2.5 py-0.5 rounded-full border" style="background-color: var(--verdigris-soft); color: var(--verdigris); border-color: var(--highlight-green-border);">${escapeHtml(category)}</span>`;
+      }
+
+      function configWarningBannerHtml() {
+        if (isConfigured) return '';
+        return `
+          <div class="px-4 py-2.5 text-center text-xs font-medium border-b" style="background-color: var(--amber-card-bg); border-color: var(--amber-card-border); color: var(--brass-accent);">
+            Setup reminder: Edit <code>config.js</code> with your Supabase URL, Supabase Anon Key, and Render API URL to enable sign-in and live AI scanning.
+          </div>
+        `;
+      }
+
+      // ----------------------------------------------------------------------
+      // 1) LANDING PAGE
+      // ----------------------------------------------------------------------
+      function renderLandingPage() {
+        const faqs = [
+          { q: 'What files and formats can I save to LOOP?', a: 'Upload PDF statements, JPG or PNG photos of paper receipts and warranty cards, paste raw email or SMS text, or record a quick voice note describing an upcoming deadline.' },
+          { q: 'Is my personal financial and travel archive private?', a: 'Yes. Your documents are stored in private per-user encrypted storage with strict Row Level Security. LOOP contains no ads, never sells records, and never trains AI models on your files without consent.' },
+          { q: 'What happens if LOOP reads a date or amount inaccurately?', a: 'LOOP never schedules a reminder silently. Every extracted field appears beside its highlighted evidence. If a date format like 03/12/2026 is ambiguous, LOOP asks you before scheduling.' },
+          { q: 'Which countries and currencies are supported?', a: 'Built in India with native support for INR (₹), IST timezones, and Indian utility, banking, and travel formats—while also supporting international currencies and date formats.' },
+          { q: 'Can I export or permanently delete all my data?', a: 'Anytime in one click from Settings. Download your entire structured archive as JSON or permanently erase every record and uploaded file immediately.' },
+          { q: 'Is LOOP free to use?', a: 'Yes. The Free plan includes up to 25 active archived documents, the 30-day ring, and email reminders during our public pilot. Plus, Pro, and Family tiers are coming soon.' }
+        ];
+
+        const brass = state.lightMode ? '#A67C2E' : '#D4AE5E';
+        const verdigris = state.lightMode ? '#1E8A6E' : '#6CCBB2';
+        const borderSubtle = state.lightMode ? '#CBD3E1' : '#26365F';
+        const bgRing = state.lightMode ? '#FFFFFF' : '#0A1228';
+
+        let heroTicks = '';
+        for (let d = 0; d < 30; d++) {
+          const rad = ((-90 + d * 12) * Math.PI) / 180;
+          const major = d % 7 === 0;
+          const r1 = major ? 79 : 83;
+          heroTicks += `<line x1="${(130 + r1 * Math.cos(rad)).toFixed(1)}" y1="${(130 + r1 * Math.sin(rad)).toFixed(1)}" x2="${(130 + 90 * Math.cos(rad)).toFixed(1)}" y2="${(130 + 90 * Math.sin(rad)).toFixed(1)}" stroke="${major ? brass : borderSubtle}" stroke-width="${major ? 1.8 : 1}" />`;
+        }
+
+        const heroMarkers = [{ day: 2, active: true }, { day: 6, active: false }, { day: 24, active: false }]
+          .map((m) => {
+            const rad = ((-90 + m.day * 12) * Math.PI) / 180;
+            const cx = (130 + 90 * Math.cos(rad)).toFixed(1);
+            const cy = (130 + 90 * Math.sin(rad)).toFixed(1);
+            return `${m.active ? `<circle cx="${cx}" cy="${cy}" r="11" fill="${brass}" fill-opacity="0.22" />` : ''}<circle cx="${cx}" cy="${cy}" r="${m.active ? 6 : 4.5}" fill="${brass}" stroke="${bgRing}" stroke-width="1.5" />`;
+          })
+          .join('');
+
+        return `
+          <div class="min-h-screen">
+            ${configWarningBannerHtml()}
+            <header class="sticky top-0 z-40 backdrop-blur-md border-b" style="background-color: var(--panel-bg); border-color: var(--panel-border);">
+              <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+                <button type="button" data-go-route="landing" class="flex items-center gap-3 cursor-pointer text-left">
+                  ${logoSvgHtml('w-7 h-8')}
+                  <span class="font-serif-display font-bold text-xl tracking-[0.14em]">LOOP</span>
+                </button>
+
+                <nav class="hidden md:flex items-center gap-7 text-sm">
+                  <button type="button" data-scroll-id="how-it-works" class="neo-muted hover:opacity-80 cursor-pointer">How it works</button>
+                  <button type="button" data-scroll-id="privacy" class="neo-muted hover:opacity-80 cursor-pointer">Privacy</button>
+                  <button type="button" data-scroll-id="pricing" class="neo-muted hover:opacity-80 cursor-pointer">Pricing</button>
+                  <button type="button" data-scroll-id="faq" class="neo-muted hover:opacity-80 cursor-pointer">FAQ</button>
+                </nav>
+
+                <div class="hidden md:flex items-center gap-3">
+                  <button type="button" id="landing-theme-btn" aria-label="Toggle theme" class="p-2 rounded-xl btn-secondary text-xs neo-brass-text">
+                    ${state.lightMode ? '☾' : '☀'}
+                  </button>
+                  ${
+                    state.isAuthenticated
+                      ? `<button type="button" data-go-route="app" class="px-4 py-2 text-sm rounded-xl btn-primary">Open dashboard</button>`
+                      : `
+                        <button type="button" data-go-route="login" class="px-3.5 py-2 text-sm font-medium rounded-xl hover:opacity-85 cursor-pointer">Log in</button>
+                        <button type="button" data-go-route="signup" class="px-4 py-2 text-sm rounded-xl btn-primary">Start free</button>
+                      `
+                  }
+                </div>
+
+                <div class="flex md:hidden items-center gap-2">
+                  <button type="button" id="landing-theme-mobile-btn" class="p-2 rounded-xl btn-secondary text-xs neo-brass-text">${state.lightMode ? 'Dark' : 'Light'}</button>
+                  <button type="button" data-go-route="${state.isAuthenticated ? 'app' : 'login'}" class="px-3 py-1.5 rounded-xl text-xs btn-primary">
+                    ${state.isAuthenticated ? 'Dashboard' : 'Sign in'}
+                  </button>
+                </div>
+              </div>
+            </header>
+
+            <!-- HERO -->
+            <section class="pt-12 pb-16 md:pt-20 md:pb-24 px-4 sm:px-6 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              <div class="lg:col-span-7 space-y-6">
+                <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full border text-xs font-medium" style="background-color: var(--panel-bg); border-color: var(--brass-border);">
+                  <span class="w-2 h-2 rounded-full shrink-0" style="background-color: var(--verdigris);"></span>
+                  <span>Personal archive &amp; user-approved reminders · Public Pilot</span>
+                </div>
+
+                <h1 class="font-serif-display text-4xl sm:text-5xl lg:text-[58px] font-bold leading-[1.08] tracking-tight">
+                  Save the bill. LOOP finds the due date.
+                </h1>
+
+                <p class="text-base sm:text-lg leading-relaxed max-w-xl neo-muted">
+                  Upload what you already have. LOOP reads it, shows you what it found, and reminds you only after you approve.
+                </p>
+
+                <div class="flex flex-wrap items-center gap-3.5 pt-2">
+                  <button type="button" data-go-route="${state.isAuthenticated ? 'app' : 'signup'}" class="px-6 py-3.5 rounded-2xl text-sm btn-primary inline-flex items-center gap-2">
+                    <span>${state.isAuthenticated ? 'Open my dashboard' : 'Start free'}</span>
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  </button>
+                  ${
+                    state.isAuthenticated
+                      ? ''
+                      : `<button type="button" data-go-route="login" class="px-6 py-3.5 rounded-2xl text-sm btn-secondary">Sign in to dashboard</button>`
+                  }
+                  <button type="button" data-scroll-id="how-it-works" class="px-3 py-3 text-sm font-medium underline underline-offset-4 neo-muted cursor-pointer">
+                    See how it works
+                  </button>
+                </div>
+              </div>
+
+              <div class="lg:col-span-5 flex justify-center">
+                <div class="w-full max-w-[380px] p-6 neo-panel shadow-xl" style="border-color: var(--brass-border);">
+                  <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-medium neo-muted">Next 30 days · Preview</span>
+                    <span class="text-xs px-2.5 py-0.5 rounded-full border" style="color: var(--verdigris); border-color: var(--verdigris); background-color: var(--verdigris-soft);">All confirmed</span>
+                  </div>
+                  <div class="relative flex items-center justify-center my-2">
+                    <svg viewBox="0 0 260 260" class="w-64 h-64">
+                      <circle cx="130" cy="130" r="102" fill="none" stroke="${borderSubtle}" stroke-width="1" />
+                      <circle cx="130" cy="130" r="90" fill="none" stroke="${brass}" stroke-width="2.2" />
+                      ${heroTicks}
+                      <circle cx="130" cy="40" r="5" fill="${verdigris}" />
+                      <text x="130" y="26" text-anchor="middle" fill="${verdigris}" font-size="10" font-weight="600">Today</text>
+                      ${heroMarkers}
+                    </svg>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none px-8">
+                      <span class="font-serif-display text-5xl font-bold leading-none">2</span>
+                      <span class="text-xs mt-1 neo-muted">days left</span>
+                      <span class="font-serif-display text-sm font-semibold mt-2 leading-tight">HDFC Regalia Card</span>
+                      <span class="text-[11px] mt-0.5 neo-brass-text">₹42,850</span>
+                    </div>
+                  </div>
+                  <div class="border-t pt-3 mt-2 flex items-center justify-between text-xs neo-muted" style="border-color: var(--brass-border);">
+                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background-color: var(--verdigris);"></span>Today (${escapeHtml(getTodayShortIST())})</span>
+                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full" style="background-color: var(--brass-accent);"></span>3 approved markers</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- TRUST STRIP -->
+            <section class="border-y py-5 px-4 sm:px-6" style="background-color: var(--panel-bg); border-color: var(--panel-border);">
+              <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div class="flex items-center gap-3 justify-center md:justify-start"><span class="w-2 h-2 rounded-full" style="background-color: var(--verdigris);"></span><span>You approve every reminder</span></div>
+                <div class="flex items-center gap-3 justify-center"><span class="w-2 h-2 rounded-full" style="background-color: var(--brass-accent);"></span><span>Delete everything anytime</span></div>
+                <div class="flex items-center gap-3 justify-center md:justify-end"><span class="w-2 h-2 rounded-full" style="background-color: var(--verdigris);"></span><span>Never used to train models without your consent</span></div>
+              </div>
+            </section>
+
+            <!-- HOW IT WORKS -->
+            <section id="how-it-works" class="py-16 md:py-24 px-4 sm:px-6 max-w-6xl mx-auto">
+              <div class="max-w-2xl mb-12">
+                <p class="text-sm font-medium mb-2 neo-brass-text">How it works</p>
+                <h2 class="font-serif-display text-3xl sm:text-4xl font-bold">From scattered documents to calm, verified clarity.</h2>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="p-5 neo-panel space-y-3">
+                  <div class="flex items-center justify-between"><span class="font-serif-display text-2xl font-bold neo-brass-text">1</span><span class="text-xs px-2.5 py-0.5 rounded-full border neo-muted" style="border-color: var(--panel-border);">PDF · Photo · Voice</span></div>
+                  <h3 class="font-serif-display text-xl font-bold">Capture</h3>
+                  <p class="text-sm leading-relaxed neo-muted">Drop a PDF bill, snap a warranty slip, paste an email snippet, or speak a note.</p>
+                </div>
+                <div class="p-5 neo-panel space-y-3" style="border-color: var(--brass-border);">
+                  <div class="flex items-center justify-between"><span class="font-serif-display text-2xl font-bold neo-brass-text">2</span><span class="text-xs px-2.5 py-0.5 rounded-full" style="background-color: var(--brass-soft); color: var(--brass-accent);">Evidence-linked</span></div>
+                  <h3 class="font-serif-display text-xl font-bold">Understand</h3>
+                  <p class="text-sm leading-relaxed neo-muted">LOOP extracts the issuer, due date, and amount and highlights the exact evidence for review.</p>
+                </div>
+                <div class="p-5 neo-panel space-y-3">
+                  <div class="flex items-center justify-between"><span class="font-serif-display text-2xl font-bold neo-brass-text">3</span><span class="text-xs px-2.5 py-0.5 rounded-full" style="background-color: var(--verdigris-soft); color: var(--verdigris);">Human-in-the-loop</span></div>
+                  <h3 class="font-serif-display text-xl font-bold">Approve</h3>
+                  <p class="text-sm leading-relaxed neo-muted">Nothing enters your schedule without your tap. Adjust lead time or edit any value first.</p>
+                </div>
+                <div class="p-5 neo-panel space-y-3">
+                  <div class="flex items-center justify-between"><span class="font-serif-display text-2xl font-bold neo-brass-text">4</span><span class="text-xs px-2.5 py-0.5 rounded-full border neo-muted" style="border-color: var(--panel-border);">30-day ring</span></div>
+                  <h3 class="font-serif-display text-xl font-bold">Follow through</h3>
+                  <p class="text-sm leading-relaxed neo-muted">See the next 30 days on one calm ring, get email alerts, and ask questions anytime.</p>
+                </div>
+              </div>
+            </section>
+
+            <!-- HONEST ABOUT UNCERTAINTY -->
+            <section class="py-12 px-4 sm:px-6 max-w-5xl mx-auto">
+              <div class="p-6 sm:p-10 neo-panel grid grid-cols-1 lg:grid-cols-12 gap-8 items-center" style="border-color: var(--brass-border);">
+                <div class="lg:col-span-6 space-y-4">
+                  <span class="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full" style="background-color: var(--brass-soft); color: var(--brass-accent);">Built-in humility</span>
+                  <h2 class="font-serif-display text-3xl sm:text-4xl font-bold">LOOP asks instead of guessing.</h2>
+                  <p class="text-sm sm:text-base leading-relaxed neo-muted">Documents mix DD/MM and MM/DD formats constantly. Whenever a date looks ambiguous, LOOP flags it in brass and lets you pick the right interpretation in one tap.</p>
+                </div>
+                <div class="lg:col-span-6">
+                  <div class="p-5 space-y-4 neo-subpanel">
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="text-xs neo-muted">Detected text: <strong>"Due: 03/12/2026"</strong></span>
+                      <span class="text-xs px-2.5 py-0.5 rounded-full" style="background-color: var(--brass-soft); color: var(--brass-accent);">Needs confirmation</span>
+                    </div>
+                    <p class="text-sm">Which date did this document mean?</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <button type="button" data-ambiguous-pick="dec" class="p-3.5 rounded-xl border text-left cursor-pointer" style="border-color: ${state.landingAmbiguousChoice === 'dec' ? 'var(--verdigris)' : 'var(--panel-border)'}; background-color: ${state.landingAmbiguousChoice === 'dec' ? 'var(--verdigris-soft)' : 'var(--panel-bg)'};">
+                        <div class="font-serif-display text-lg font-bold">3 Dec 2026</div>
+                        <div class="text-xs mt-0.5 neo-muted">DD/MM/YYYY (Indian standard)</div>
+                      </button>
+                      <button type="button" data-ambiguous-pick="mar" class="p-3.5 rounded-xl border text-left cursor-pointer" style="border-color: ${state.landingAmbiguousChoice === 'mar' ? 'var(--verdigris)' : 'var(--panel-border)'}; background-color: ${state.landingAmbiguousChoice === 'mar' ? 'var(--verdigris-soft)' : 'var(--panel-bg)'};">
+                        <div class="font-serif-display text-lg font-bold">12 Mar 2026</div>
+                        <div class="text-xs mt-0.5 neo-muted">MM/DD/YYYY (US format)</div>
+                      </button>
+                    </div>
+                    ${state.landingAmbiguousChoice ? `<p class="text-xs neo-verdigris-text">Confirmed as ${state.landingAmbiguousChoice === 'dec' ? '3 Dec 2026' : '12 Mar 2026'}. Ready to schedule.</p>` : ''}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- PRIVACY -->
+            <section id="privacy" class="py-16 px-4 sm:px-6 max-w-6xl mx-auto">
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div class="lg:col-span-5 space-y-4">
+                  <p class="text-sm font-medium neo-verdigris-text">Privacy architecture</p>
+                  <h2 class="font-serif-display text-3xl sm:text-4xl font-bold">Your household records belong strictly to you.</h2>
+                  <p class="text-sm sm:text-base leading-relaxed neo-muted">LOOP is designed like a private study—not an ad network. Your statements, warranties, and travel confirmations stay sealed under your explicit permissions.</p>
+                </div>
+                <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div class="p-5 neo-panel space-y-1.5"><h3 class="font-semibold text-base">Encrypted private vault</h3><p class="text-xs leading-relaxed neo-muted">Per-user isolated database rows and private signed-URL document storage.</p></div>
+                  <div class="p-5 neo-panel space-y-1.5"><h3 class="font-semibold text-base">One-click export &amp; delete</h3><p class="text-xs leading-relaxed neo-muted">Download your full archive in open JSON or permanently purge all records anytime.</p></div>
+                  <div class="p-5 neo-panel space-y-1.5"><h3 class="font-semibold text-base">No ads, no data brokers</h3><p class="text-xs leading-relaxed neo-muted">Transparent subscription plans—never profiling your personal spending.</p></div>
+                  <div class="p-5 neo-panel space-y-1.5"><h3 class="font-semibold text-base">Zero silent AI training</h3><p class="text-xs leading-relaxed neo-muted">Your personal documents are never used to train models without explicit consent.</p></div>
+                </div>
+              </div>
+            </section>
+
+            <!-- PRICING -->
+            <section id="pricing" class="py-16 md:py-24 px-4 sm:px-6 max-w-6xl mx-auto">
+              <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12">
+                <div>
+                  <p class="text-sm font-medium mb-2 neo-brass-text">Plans &amp; pilot access</p>
+                  <h2 class="font-serif-display text-3xl sm:text-4xl font-bold">Start free during our pilot.</h2>
+                </div>
+                ${state.waitlistMessage ? `<div class="px-4 py-2 rounded-xl border text-xs font-medium neo-brass-text" style="background-color: var(--brass-soft); border-color: var(--brass-accent);">${escapeHtml(state.waitlistMessage)}</div>` : ''}
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+                <div class="p-6 neo-panel flex flex-col justify-between pricing-card-glow">
+                  <div>
+                    <div class="flex items-center justify-between"><h3 class="font-serif-display text-2xl font-bold">Free</h3><span class="text-xs px-2.5 py-0.5 rounded-full border font-medium" style="border-color: var(--verdigris); background-color: var(--verdigris-soft); color: var(--verdigris);">Available now</span></div>
+                    <p class="text-xs mt-1 neo-muted">For getting started</p>
+                    <div class="my-5"><span class="font-serif-display text-4xl font-bold">Free</span><span class="text-xs ml-1.5 neo-muted">during public pilot</span></div>
+                    <ul class="space-y-2.5 text-sm neo-muted">
+                      <li>✓ Up to 25 active archived documents</li>
+                      <li>✓ 30-day interactive ring</li>
+                      <li>✓ Real email reminders</li>
+                    </ul>
+                  </div>
+                  <button type="button" data-go-route="signup" class="mt-6 w-full py-2.5 rounded-xl text-sm btn-primary">Start free</button>
+                </div>
+
+                <div class="relative pt-4 flex flex-col">
+                  <div class="mx-auto w-36 h-7 rounded-t-full border-t border-x flex items-center justify-center text-[11px] font-semibold -mb-[1px] z-10 neo-brass-text" style="border-color: var(--brass-accent); background-color: var(--bg-page);">Most popular</div>
+                  <div class="p-6 neo-panel flex-1 flex flex-col justify-between pricing-card-plus">
+                    <div>
+                      <div class="flex items-center justify-between gap-2"><h3 class="font-serif-display text-2xl font-bold">Plus</h3><span class="text-xs px-2.5 py-0.5 rounded-full border neo-brass-text" style="border-color: var(--brass-border);">Coming soon</span></div>
+                      <p class="text-xs mt-1 neo-muted">Complete personal archive</p>
+                      <div class="my-5"><span class="font-serif-display text-3xl font-bold">Coming soon</span></div>
+                      <ul class="space-y-2.5 text-sm neo-muted">
+                        <li>✓ Unlimited bills, bookings &amp; warranties</li>
+                        <li>✓ Voice note capture &amp; transcription</li>
+                        <li>✓ Unlimited Ask LOOP archive Q&amp;A</li>
+                        <li>✓ Schedule pattern insights</li>
+                      </ul>
+                    </div>
+                    <button type="button" data-waitlist-tier="LOOP Plus" class="mt-6 w-full py-2.5 rounded-xl border text-sm font-medium cursor-pointer neo-brass-text" style="border-color: var(--brass-border); background-color: var(--brass-soft);">Join waitlist</button>
+                  </div>
+                </div>
+
+                <div class="p-6 neo-panel flex flex-col justify-between pricing-card-glow">
+                  <div>
+                    <div class="flex items-center justify-between gap-2"><h3 class="font-serif-display text-2xl font-bold">Pro</h3><span class="text-xs px-2.5 py-0.5 rounded-full border neo-brass-text" style="border-color: var(--brass-border);">Coming soon</span></div>
+                    <p class="text-xs mt-1 neo-muted">For consultants &amp; power users</p>
+                    <div class="my-5"><span class="font-serif-display text-3xl font-bold">Coming soon</span></div>
+                    <ul class="space-y-2.5 text-sm neo-muted">
+                      <li>✓ Everything in Plus</li>
+                      <li>✓ Dedicated email forwarding inbox</li>
+                      <li>✓ GST &amp; tax-ready annual CSV/ZIP packs</li>
+                    </ul>
+                  </div>
+                  <button type="button" data-waitlist-tier="LOOP Pro" class="mt-6 w-full py-2.5 rounded-xl text-sm btn-secondary">Join waitlist</button>
+                </div>
+
+                <div class="p-6 neo-panel flex flex-col justify-between pricing-card-glow">
+                  <div>
+                    <div class="flex items-center justify-between gap-2"><h3 class="font-serif-display text-2xl font-bold">Family</h3><span class="text-xs px-2.5 py-0.5 rounded-full border neo-brass-text" style="border-color: var(--brass-border);">Coming soon</span></div>
+                    <p class="text-xs mt-1 neo-muted">Shared household vault</p>
+                    <div class="my-5"><span class="font-serif-display text-3xl font-bold">Coming soon</span></div>
+                    <ul class="space-y-2.5 text-sm neo-muted">
+                      <li>✓ Shared appliance warranties</li>
+                      <li>✓ Joint travel &amp; utility reminders</li>
+                      <li>✓ Private personal folders per member</li>
+                    </ul>
+                  </div>
+                  <button type="button" data-waitlist-tier="LOOP Family" class="mt-6 w-full py-2.5 rounded-xl text-sm btn-secondary">Join waitlist</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- FAQ -->
+            <section id="faq" class="py-16 px-4 sm:px-6 max-w-4xl mx-auto">
+              <div class="mb-10">
+                <p class="text-sm font-medium mb-2 neo-brass-text">Questions &amp; answers</p>
+                <h2 class="font-serif-display text-3xl sm:text-4xl font-bold">Frequently asked questions</h2>
+              </div>
+              <div class="space-y-3">
+                ${faqs
+                  .map((item, idx) => {
+                    const isOpen = state.openFaqIndex === idx;
+                    return `
+                      <div class="neo-panel overflow-hidden" style="border-color: ${isOpen ? 'var(--brass-border)' : 'var(--panel-border)'};">
+                        <button type="button" data-faq-idx="${idx}" class="w-full px-6 py-4 text-left flex items-center justify-between gap-4 font-medium text-base cursor-pointer">
+                          <span>${escapeHtml(item.q)}</span>
+                          <span class="neo-brass-text text-sm">${isOpen ? '−' : '+'}</span>
+                        </button>
+                        ${isOpen ? `<div class="px-6 pb-5 text-sm leading-relaxed border-t pt-3 neo-muted" style="border-color: var(--panel-border);">${escapeHtml(item.a)}</div>` : ''}
+                      </div>
+                    `;
+                  })
+                  .join('')}
+              </div>
+            </section>
+
+            <footer class="border-t py-10 px-4 sm:px-6 text-sm neo-muted" style="border-color: var(--panel-border);">
+              <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div class="flex items-center gap-4">
+                  ${logoSvgHtml('w-6 h-7')}
+                  <span class="font-serif-display font-bold text-lg tracking-widest" style="color: var(--text-primary);">LOOP</span>
+                  <span class="text-xs px-2.5 py-1 rounded-full border neo-brass-text" style="border-color: var(--brass-border);">Public pilot · Built in India</span>
+                </div>
+                <div class="flex flex-wrap items-center justify-center gap-6 text-xs">
+                  <button type="button" data-go-route="login" class="hover:underline cursor-pointer">Log in</button>
+                  <button type="button" data-go-route="signup" class="hover:underline cursor-pointer">Start free</button>
+                  <button type="button" data-go-route="app" class="hover:underline cursor-pointer">Dashboard</button>
+                </div>
+              </div>
+            </footer>
+          </div>
+        `;
+      }
+
+      function bindLandingEvents() {
+        document.querySelectorAll('[data-go-route]').forEach((btn) => {
+          btn.addEventListener('click', () => navigateTo(btn.getAttribute('data-go-route')));
+        });
+        document.querySelectorAll('[data-scroll-id]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const el = document.getElementById(btn.getAttribute('data-scroll-id'));
+            if (el) el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+          });
+        });
+        const toggleTheme = () => { state.lightMode = !state.lightMode; render(); };
+        const t1 = document.getElementById('landing-theme-btn');
+        const t2 = document.getElementById('landing-theme-mobile-btn');
+        if (t1) t1.addEventListener('click', toggleTheme);
+        if (t2) t2.addEventListener('click', toggleTheme);
+
+        document.querySelectorAll('[data-ambiguous-pick]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            state.landingAmbiguousChoice = btn.getAttribute('data-ambiguous-pick');
+            render();
+          });
+        });
+        document.querySelectorAll('[data-waitlist-tier]').forEach((btn) => {
+          btn.addEventListener('click', () => openWaitlistModal(btn.getAttribute('data-waitlist-tier')));
+        });
+        document.querySelectorAll('[data-faq-idx]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const idx = Number(btn.getAttribute('data-faq-idx'));
+            state.openFaqIndex = state.openFaqIndex === idx ? null : idx;
+            render();
+          });
+        });
+      }
+
+      // ----------------------------------------------------------------------
+      // 2) AUTH PAGE (/login, /signup) — LIVE SUPABASE AUTH
+      // ----------------------------------------------------------------------
+      function renderAuthPage(mode) {
+        const isSignup = mode === 'signup';
+        const errs = state.authErrors || {};
+
+        return `
+          <div class="min-h-screen flex flex-col">
+            ${configWarningBannerHtml()}
+            <div class="flex-1 grid grid-cols-1 lg:grid-cols-12">
+              <div class="hidden lg:flex lg:col-span-5 border-r p-12 flex-col justify-between fluted-navy-sidebar text-[#EDEFF5]" style="border-color: var(--brass-border);">
+                <button type="button" data-go-route="landing" class="flex items-center gap-3 cursor-pointer text-left">
+                  ${logoSvgHtml('w-8 h-9')}
+                  <div>
+                    <span class="font-serif-display font-bold text-2xl tracking-[0.14em] block leading-none">LOOP</span>
+                    <span class="text-xs text-[#9AA6C0] block mt-1">Personal archive &amp; reminders</span>
+                  </div>
+                </button>
+                <div class="my-auto py-8 flex flex-col items-center">
+                  <div class="w-72 h-96 rounded-t-full border-2 p-4 flex flex-col justify-end" style="border-color: #D4AE5E; background-color: rgba(212,174,94,0.10);">
+                    <div class="w-full h-full rounded-t-full border p-6 flex flex-col justify-center text-center" style="border-color: rgba(212,174,94,0.4);">
+                      <p class="font-serif-display italic text-2xl leading-snug mb-4">
+                        “Order is the shape upon which beauty depends—and calm follows when nothing is left to memory alone.”
+                      </p>
+                      <div class="border-t pt-3 text-xs text-[#D4AE5E]" style="border-color: rgba(212,174,94,0.35);">
+                        LOOP Archive Room · Est. 2026
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <p class="text-xs text-[#9AA6C0]">Encrypted personal archive · Built in India</p>
+              </div>
+
+              <div class="lg:col-span-7 flex items-center justify-center p-6 sm:p-12">
+                <div class="w-full max-w-md space-y-6">
+                  <div class="flex items-center justify-between lg:hidden">
+                    <button type="button" data-go-route="landing" class="flex items-center gap-2.5 cursor-pointer">
+                      ${logoSvgHtml('w-7 h-8')}
+                      <span class="font-serif-display font-bold text-xl tracking-[0.14em]">LOOP</span>
+                    </button>
+                    <button type="button" data-go-route="landing" class="text-xs neo-muted underline">Back to home</button>
+                  </div>
+
+                  <div>
+                    <div class="inline-flex items-center gap-2 text-xs font-medium px-2.5 py-1 rounded-full mb-3" style="background-color: var(--brass-soft); color: var(--brass-accent);">
+                      Step 1 of 2 · Account verification
+                    </div>
+                    <h1 class="font-serif-display text-3xl sm:text-4xl font-bold">
+                      ${isSignup ? 'Create your personal archive' : 'Sign in to LOOP'}
+                    </h1>
+                    <p class="text-sm mt-2 neo-muted">
+                      ${isSignup ? 'Create your free pilot account to upload bills and receive verified reminders.' : 'Sign in to access your private 30-day archive and Vault.'}
+                    </p>
+                  </div>
+
+                  ${state.authNotice ? `<div class="p-3.5 rounded-xl border text-xs" style="background-color: var(--verdigris-soft); border-color: var(--verdigris); color: var(--verdigris);">${escapeHtml(state.authNotice)}</div>` : ''}
+                  ${errs.form ? `<div class="p-3.5 rounded-xl border text-xs" style="background-color: var(--amber-card-bg); border-color: var(--amber-card-border); color: var(--brass-accent);">${escapeHtml(errs.form)}</div>` : ''}
+
+                  <button type="button" id="google-auth-btn" ${state.authLoading ? 'disabled' : ''} class="w-full py-3 px-4 rounded-2xl text-sm btn-secondary flex items-center justify-center gap-3">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
+                      <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.8C6.2 7.2 8.9 5 12 5z" />
+                      <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.6l3.7 2.9c2.2-2 3.7-5 3.7-8.7z" />
+                      <path fill="#FBBC05" d="M5.3 14.8c-.2-.8-.4-1.6-.4-2.5s.2-1.7.4-2.5L1.6 7C.6 9 0 11.2 0 13.5s.6 4.5 1.6 6.5l3.7-2.9z" />
+                      <path fill="#34A853" d="M12 24c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.1 0-5.8-2.1-6.7-5l-3.7 2.9C3.5 21.1 7.4 24 12 24z" />
+                    </svg>
+                    <span>Continue with Google</span>
+                  </button>
+
+                  <div class="flex items-center gap-3 text-xs neo-muted">
+                    <div class="h-[1px] flex-1" style="background-color: var(--panel-border);"></div>
+                    <span>or continue with email</span>
+                    <div class="h-[1px] flex-1" style="background-color: var(--panel-border);"></div>
+                  </div>
+
+                  <form id="auth-form" novalidate class="space-y-4">
+                    <div>
+                      <label for="auth-email" class="block text-sm font-medium mb-1.5">Email address</label>
+                      <input id="auth-email" type="email" value="${escapeHtml(state.authEmailInput)}" placeholder="you@domain.in" class="w-full px-4 py-3 rounded-xl text-sm neo-input focus:outline-none" />
+                      ${errs.email ? `<p class="text-xs mt-1.5 neo-brass-text">${escapeHtml(errs.email)}</p>` : ''}
+                    </div>
+                    <div>
+                      <label for="auth-password" class="block text-sm font-medium mb-1.5">Password</label>
+                      <input id="auth-password" type="password" value="${escapeHtml(state.authPasswordInput)}" placeholder="At least 6 characters" class="w-full px-4 py-3 rounded-xl text-sm neo-input focus:outline-none" />
+                      ${errs.password ? `<p class="text-xs mt-1.5 neo-brass-text">${escapeHtml(errs.password)}</p>` : ''}
+                    </div>
+                    ${
+                      isSignup
+                        ? `
+                          <div>
+                            <label class="flex items-start gap-2.5 text-xs cursor-pointer neo-muted">
+                              <input id="auth-consent" type="checkbox" ${state.authConsentChecked ? 'checked' : ''} class="mt-0.5 rounded" />
+                              <span>I agree to LOOP’s Privacy Policy. My documents are encrypted and never used to train AI models without my explicit consent.</span>
+                            </label>
+                            ${errs.consent ? `<p class="text-xs mt-1.5 neo-brass-text">${escapeHtml(errs.consent)}</p>` : ''}
+                          </div>
+                        `
+                        : ''
+                    }
+                    <button type="submit" ${state.authLoading ? 'disabled' : ''} class="w-full py-3.5 rounded-2xl text-sm btn-primary">
+                      ${state.authLoading ? 'Please wait…' : isSignup ? 'Create free account' : 'Sign in'}
+                    </button>
+                  </form>
+
+                  <div class="text-sm neo-muted pt-1 text-center">
+                    ${
+                      isSignup
+                        ? `Already have an account? <button type="button" data-go-route="login" class="font-medium underline neo-brass-text cursor-pointer">Log in</button>`
+                        : `New to LOOP? <button type="button" data-go-route="signup" class="font-medium underline neo-brass-text cursor-pointer">Create free account</button>`
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function bindAuthEvents(mode) {
+        document.querySelectorAll('[data-go-route]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            state.authErrors = {};
+            state.authNotice = '';
+            navigateTo(btn.getAttribute('data-go-route'));
+          });
+        });
+
+        const emailEl = document.getElementById('auth-email');
+        const passEl = document.getElementById('auth-password');
+        const consentEl = document.getElementById('auth-consent');
+        if (emailEl) emailEl.addEventListener('input', (e) => { state.authEmailInput = e.target.value; });
+        if (passEl) passEl.addEventListener('input', (e) => { state.authPasswordInput = e.target.value; });
+        if (consentEl) consentEl.addEventListener('change', (e) => { state.authConsentChecked = e.target.checked; });
+
+        const googleBtn = document.getElementById('google-auth-btn');
+        if (googleBtn) {
+          googleBtn.addEventListener('click', async () => {
+            if (!supabaseClient) {
+              state.authErrors = { form: 'Configure SUPABASE_URL and SUPABASE_ANON_KEY in config.js first.' };
+              render();
+              return;
+            }
+            state.authLoading = true;
+            state.authErrors = {};
+            render();
+            const { error } = await supabaseClient.auth.signInWithOAuth({
+              provider: 'google',
+              options: { redirectTo: window.location.origin + window.location.pathname }
+            });
+            if (error) {
+              state.authLoading = false;
+              state.authErrors = { form: error.message };
+              render();
+            }
+          });
+        }
+
+        const form = document.getElementById('auth-form');
+        if (form) {
+          form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errs = {};
+            const emailVal = state.authEmailInput.trim();
+            if (!emailVal || !emailVal.includes('@') || !emailVal.includes('.')) {
+              errs.email = 'Enter a valid email address.';
+            }
+            if (state.authPasswordInput.length < 6) {
+              errs.password = 'Use at least 6 characters for your password.';
+            }
+            if (mode === 'signup' && !state.authConsentChecked) {
+              errs.consent = 'Please tick the privacy consent box before continuing.';
+            }
+            if (!supabaseClient) {
+              errs.form = 'Configure SUPABASE_URL, SUPABASE_ANON_KEY, and API_BASE_URL in config.js first.';
+            }
+            state.authErrors = errs;
+            if (Object.keys(errs).length > 0) {
+              render();
+              return;
+            }
+
+            state.authLoading = true;
+            state.authNotice = '';
+            render();
+
+            try {
+              if (mode === 'signup') {
+                const { data, error } = await supabaseClient.auth.signUp({
+                  email: emailVal,
+                  password: state.authPasswordInput
+                });
+                if (error) throw error;
+                if (data.session) {
+                  await handleSignedInSession(data.session);
+                } else {
+                  state.authNotice = 'Account created! Check your inbox for the confirmation email, then log in.';
+                  state.authPasswordInput = '';
+                }
+              } else {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                  email: emailVal,
+                  password: state.authPasswordInput
+                });
+                if (error) throw error;
+                if (data.session) {
+                  await handleSignedInSession(data.session);
+                }
+              }
+            } catch (err) {
+              state.authErrors = { form: err.message || 'Authentication failed.' };
+            } finally {
+              state.authLoading = false;
+              render();
+            }
+          });
+        }
+      }
+
+      // ----------------------------------------------------------------------
+      // 3) PERMISSIONS PAGE (/permissions) — SAVED TO SUPABASE VIA FASTAPI
+      // ----------------------------------------------------------------------
+      function renderPermissionsPage() {
+        const p = state.permissions;
+        const canProceed = p.documentAccess && !state.permissionsSaving;
+
+        return `
+          <div class="min-h-screen flex flex-col justify-between p-4 sm:p-8">
+            <div class="max-w-3xl w-full mx-auto flex items-center justify-between">
+              <button type="button" data-go-route="landing" class="flex items-center gap-3 cursor-pointer">
+                ${logoSvgHtml('w-7 h-8')}
+                <span class="font-serif-display font-bold text-xl tracking-[0.14em]">LOOP</span>
+              </button>
+              <span class="text-xs font-medium neo-brass-text">Step 2 of 2 · Essential permissions</span>
+            </div>
+
+            <div class="max-w-3xl w-full mx-auto my-8">
+              <div class="p-6 sm:p-10 neo-panel shadow-xl space-y-6" style="border-color: var(--brass-border);">
+                <div class="space-y-2">
+                  <p class="text-xs font-medium neo-verdigris-text">Signed in as ${escapeHtml(state.userEmail)}</p>
+                  <h1 class="font-serif-display text-3xl sm:text-4xl font-bold">Review essential permissions</h1>
+                  <p class="text-sm leading-relaxed neo-muted">
+                    LOOP follows strict human-in-the-loop rules. Confirm how LOOP accesses your files and delivers approved reminders before opening your dashboard.
+                  </p>
+                </div>
+
+                <div class="space-y-3.5">
+                  <div class="p-4 sm:p-5 neo-subpanel flex items-start justify-between gap-4" style="border-color: ${p.documentAccess ? 'var(--verdigris)' : 'var(--brass-accent)'};">
+                    <div class="space-y-1">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <h2 class="font-semibold text-sm sm:text-base">Document &amp; file extraction</h2>
+                        <span class="text-[11px] px-2 py-0.5 rounded-full font-medium" style="background-color: var(--brass-soft); color: var(--brass-accent);">Required</span>
+                      </div>
+                      <p class="text-xs leading-relaxed neo-muted">Allows LOOP to read uploaded PDF bills, ticket vouchers, and warranty images to highlight dates and amounts for your verification.</p>
+                    </div>
+                    <button type="button" role="switch" aria-checked="${p.documentAccess}" data-perm-toggle="documentAccess" class="w-11 h-6 rounded-full p-0.5 transition-colors shrink-0 cursor-pointer" style="background-color: ${p.documentAccess ? 'var(--verdigris)' : 'rgba(154,166,192,0.35)'};">
+                      <span class="block w-5 h-5 rounded-full bg-white transition-transform ${p.documentAccess ? 'translate-x-5' : 'translate-x-0'}"></span>
+                    </button>
+                  </div>
+
+                  <div class="p-4 sm:p-5 neo-subpanel flex items-start justify-between gap-4">
+                    <div class="space-y-2 flex-1">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <h2 class="font-semibold text-sm sm:text-base">Approved reminder alerts</h2>
+                        <span class="text-[11px] px-2 py-0.5 rounded-full border neo-muted" style="border-color: var(--panel-border);">Recommended</span>
+                      </div>
+                      <p class="text-xs leading-relaxed neo-muted">Send quiet email alerts only after you explicitly approve a document’s due date.</p>
+                      <div class="pt-1 flex flex-wrap items-center gap-2">
+                        <span class="text-xs neo-muted">Default lead time:</span>
+                        ${['1 day before', '2 days before', '3 days before', '1 week before']
+                          .map((lt) => `<button type="button" data-perm-lead="${lt}" class="px-2.5 py-1 rounded-lg text-xs ${p.leadTime === lt ? 'btn-primary' : 'btn-secondary'}">${lt}</button>`)
+                          .join('')}
+                      </div>
+                    </div>
+                    <button type="button" role="switch" aria-checked="${p.notifications}" data-perm-toggle="notifications" class="w-11 h-6 rounded-full p-0.5 transition-colors shrink-0 cursor-pointer" style="background-color: ${p.notifications ? 'var(--verdigris)' : 'rgba(154,166,192,0.35)'};">
+                      <span class="block w-5 h-5 rounded-full bg-white transition-transform ${p.notifications ? 'translate-x-5' : 'translate-x-0'}"></span>
+                    </button>
+                  </div>
+
+                  <div class="p-4 sm:p-5 neo-subpanel flex items-start justify-between gap-4">
+                    <div class="space-y-1">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <h2 class="font-semibold text-sm sm:text-base">Microphone for voice notes</h2>
+                        <span class="text-[11px] px-2 py-0.5 rounded-full border neo-muted" style="border-color: var(--panel-border);">Optional</span>
+                      </div>
+                      <p class="text-xs leading-relaxed neo-muted">Lets you speak a quick bill or renewal reminder hands-free. Audio is processed only when you press record.</p>
+                    </div>
+                    <button type="button" role="switch" aria-checked="${p.microphone}" data-perm-toggle="microphone" class="w-11 h-6 rounded-full p-0.5 transition-colors shrink-0 cursor-pointer" style="background-color: ${p.microphone ? 'var(--verdigris)' : 'rgba(154,166,192,0.35)'};">
+                      <span class="block w-5 h-5 rounded-full bg-white transition-transform ${p.microphone ? 'translate-x-5' : 'translate-x-0'}"></span>
+                    </button>
+                  </div>
+
+                  <div class="p-4 rounded-xl border flex items-center justify-between gap-3" style="background-color: var(--verdigris-soft); border-color: var(--verdigris);">
+                    <div class="text-xs">
+                      <strong class="block" style="color: var(--verdigris);">Zero AI model training guarantee</strong>
+                      <span class="neo-muted">Your archive is encrypted and excluded from model training by default.</span>
+                    </div>
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full border shrink-0" style="border-color: var(--verdigris); color: var(--verdigris);">Protected</span>
+                  </div>
+                </div>
+
+                ${!p.documentAccess ? `<p class="text-xs neo-brass-text">Enable Document &amp; file extraction above so LOOP can read your uploaded bills and receipts.</p>` : ''}
+
+                <div class="pt-4 border-t flex flex-col sm:flex-row items-center justify-between gap-3" style="border-color: var(--panel-border);">
+                  <button type="button" id="perm-signout-btn" class="px-4 py-2.5 rounded-xl text-xs btn-secondary w-full sm:w-auto">Sign out</button>
+                  <button type="button" id="confirm-permissions-btn" ${canProceed ? '' : 'disabled'} class="px-6 py-3 rounded-xl text-sm btn-primary w-full sm:w-auto">
+                    ${state.permissionsSaving ? 'Saving…' : 'Confirm permissions & enter dashboard'}
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="text-center text-xs neo-muted">You can update or revoke any permission anytime in Settings.</div>
+          </div>
+        `;
+      }
+
+      function bindPermissionsEvents() {
+        document.querySelectorAll('[data-go-route]').forEach((btn) => {
+          btn.addEventListener('click', () => navigateTo(btn.getAttribute('data-go-route')));
+        });
+        document.querySelectorAll('[data-perm-toggle]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const key = btn.getAttribute('data-perm-toggle');
+            state.permissions[key] = !state.permissions[key];
+            render();
+          });
+        });
+        document.querySelectorAll('[data-perm-lead]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            state.permissions.leadTime = btn.getAttribute('data-perm-lead');
+            state.draftReminderTiming = state.permissions.leadTime;
+            render();
+          });
+        });
+        const signOutBtn = document.getElementById('perm-signout-btn');
+        if (signOutBtn) signOutBtn.addEventListener('click', handleSignOut);
+
+        const confirmBtn = document.getElementById('confirm-permissions-btn');
+        if (confirmBtn) {
+          confirmBtn.addEventListener('click', async () => {
+            if (!state.permissions.documentAccess) return;
+            state.permissionsSaving = true;
+            render();
+            try {
+              await apiFetch('/api/permissions', {
+                method: 'PUT',
+                body: JSON.stringify({
+                  permissions_granted: true,
+                  documentAccess: state.permissions.documentAccess,
+                  notifications: state.permissions.notifications,
+                  microphone: state.permissions.microphone,
+                  leadTime: state.permissions.leadTime
+                })
+              });
+              state.permissionsGranted = true;
+              const recs = await apiFetch('/api/records');
+              state.records = Array.isArray(recs) ? recs : [];
+              state.selectedRingItemId = state.records[0] ? state.records[0].id : null;
+              showToast('Permissions saved · Welcome to LOOP');
+              navigateTo('app', 'today');
+            } catch (err) {
+              showToast(err.message || 'Could not save permissions.');
+            } finally {
+              state.permissionsSaving = false;
+              render();
+            }
+          });
+        }
+      }
+
+      // ----------------------------------------------------------------------
+      // 4) DASHBOARD SHELL
+      // ----------------------------------------------------------------------
+      function renderDashboardShell(innerContentHtml) {
+        const itemsWithin30 = state.records.filter((r) => (r.daysFromToday ?? 999) <= 30).length;
+        const navItems = [
+          { id: 'today', label: 'Today', badge: itemsWithin30, icon: `<svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>` },
+          { id: 'add', label: 'Add document', badge: null, icon: `<svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>` },
+          { id: 'vault', label: 'Vault', badge: state.records.length, icon: `<svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>` },
+          { id: 'ask', label: 'Ask LOOP', badge: null, icon: `<svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>` },
+          { id: 'settings', label: 'Settings', badge: null, icon: `<svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>` }
+        ];
+
+        const desktopNavLinks = navItems
+          .map((item) => {
+            const active = state.appTab === item.id;
+            const badgeHtml = item.badge !== null && item.badge > 0
+              ? `<span class="text-xs px-2 py-0.5 rounded-full font-semibold ${active ? 'bg-[#D4AE5E] text-[#0A1228]' : 'bg-[#101B3A] text-[#D4AE5E] border border-[#D4AE5E]/30'}">${item.badge}</span>`
+              : '';
+            return `
+              <button type="button" data-app-tab="${item.id}" class="w-full flex items-center justify-between px-6 py-3 text-sm transition-colors cursor-pointer ${active ? 'border-l-[3px] border-[#D4AE5E] bg-[#101B3A] text-[#EDEFF5] font-semibold' : 'border-l-[3px] border-transparent text-[#9AA6C0] hover:text-[#EDEFF5] hover:bg-[#101B3A]/60 font-medium'}">
+                <span class="flex items-center gap-3"><span class="${active ? 'text-[#D4AE5E]' : ''}">${item.icon}</span><span>${item.label}</span></span>
+                ${badgeHtml}
+              </button>
+            `;
+          })
+          .join('');
+
+        const mobileNavLinks = navItems
+          .map((item) => {
+            const active = state.appTab === item.id;
+            return `
+              <button type="button" data-app-tab="${item.id}" class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm cursor-pointer ${active ? 'bg-[#D4AE5E] text-[#0A1228] font-semibold' : 'text-[#9AA6C0] hover:bg-[#101B3A] hover:text-[#EDEFF5]'}">
+                <span class="flex items-center gap-2.5">${item.icon}<span>${item.label}</span></span>
+                ${item.badge !== null && item.badge > 0 ? `<span class="text-xs font-semibold">${item.badge}</span>` : ''}
+              </button>
+            `;
+          })
+          .join('');
+
+        return `
+          <div class="min-h-screen flex flex-col md:flex-row">
+            <aside aria-label="Primary navigation" class="hidden md:flex md:w-[240px] md:flex-col md:fixed md:inset-y-0 fluted-navy-sidebar border-r border-[#D4AE5E]/45 text-[#EDEFF5] z-30">
+              <div class="px-6 py-6 border-b border-white/10">
+                <button type="button" data-go-route="landing" class="flex items-center gap-3 text-left cursor-pointer">
+                  ${logoSvgHtml('w-8 h-9')}
+                  <div>
+                    <span class="font-serif-display font-bold text-2xl tracking-[0.14em] text-[#EDEFF5] block leading-none">LOOP</span>
+                    <span class="text-[11px] text-[#9AA6C0] block mt-1">Pilot · ${state.records.length}/${state.maxActiveRecords} active</span>
+                  </div>
+                </button>
+              </div>
+
+              <nav class="flex-1 py-5 space-y-1">${desktopNavLinks}</nav>
+
+              <div class="p-4 border-t border-white/10 space-y-2">
+                <button type="button" id="open-feedback-btn" class="w-full flex items-center justify-center gap-2 px-3.5 py-2 rounded-[10px] bg-[#101B3A] hover:bg-[#16244C] border border-[#D4AE5E]/45 text-xs font-medium text-[#D4AE5E] cursor-pointer">
+                  <span>★ Send pilot feedback</span>
+                </button>
+                <button type="button" id="dash-theme-toggle" class="w-full flex items-center justify-center gap-2 px-3.5 py-2 rounded-[10px] bg-[#101B3A] hover:bg-[#16244C] border border-[#26365F] text-xs font-medium text-[#EDEFF5] cursor-pointer">
+                  <span class="text-[#D4AE5E]">${state.lightMode ? '☾' : '☀'}</span>
+                  <span>${state.lightMode ? 'Dark navy theme' : 'Light marble theme'}</span>
+                </button>
+              </div>
+            </aside>
+
+            <header class="md:hidden sticky top-0 z-30 fluted-navy-sidebar border-b border-[#D4AE5E]/45 text-[#EDEFF5]">
+              <div class="px-4 h-14 flex items-center justify-between">
+                <button type="button" data-go-route="landing" class="flex items-center gap-2.5 cursor-pointer">
+                  ${logoSvgHtml('w-7 h-8')}
+                  <span class="font-serif-display font-bold text-xl tracking-[0.14em]">LOOP</span>
+                </button>
+                <div class="flex items-center gap-2">
+                  <button type="button" id="open-feedback-mobile-btn" class="px-2.5 py-1.5 rounded-lg bg-[#101B3A] border border-[#D4AE5E]/45 text-xs text-[#D4AE5E]">Feedback</button>
+                  <button type="button" id="dash-mobile-theme-toggle" class="px-2.5 py-1.5 rounded-lg bg-[#101B3A] border border-[#26365F] text-xs text-[#D4AE5E]">${state.lightMode ? 'Dark' : 'Light'}</button>
+                  <button type="button" id="dash-mobile-menu-btn" class="px-3 py-1.5 rounded-lg bg-[#101B3A] border border-[#26365F] text-xs font-medium text-[#EDEFF5]">${state.mobileMenuOpen ? 'Close' : 'Menu'}</button>
+                </div>
+              </div>
+              ${state.mobileMenuOpen ? `<div class="border-t border-white/10 px-4 py-3 space-y-1 bg-[#0A1228]"><nav class="space-y-1">${mobileNavLinks}</nav></div>` : ''}
+            </header>
+
+            <main class="flex-1 md:pl-[240px]">
+              <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-10 py-7 sm:py-9">
+                ${innerContentHtml}
+              </div>
+            </main>
+          </div>
+        `;
+      }
+
+      // ----------------------------------------------------------------------
+      // TODAY TAB
+      // ----------------------------------------------------------------------
+      function buildThirtyDayRingSvg(itemsWithin30, selectedItem) {
+        const size = 320, cx = 160, cy = 160, radius = 120;
+        const brassColor = state.lightMode ? '#A67C2E' : '#D4AE5E';
+        const verdigrisColor = state.lightMode ? '#1E8A6E' : '#6CCBB2';
+        const trackColor = state.lightMode ? '#CBD3E1' : '#26365F';
+        const ringBg = state.lightMode ? '#FFFFFF' : '#0A1228';
+
+        let ticksSvg = '';
+        for (let day = 0; day < 30; day++) {
+          const rad = ((-90 + day * 12) * Math.PI) / 180;
+          const isWeek = day % 7 === 0;
+          const r1 = isWeek ? radius - 11 : radius - 6;
+          ticksSvg += `<line x1="${(cx + r1 * Math.cos(rad)).toFixed(2)}" y1="${(cy + r1 * Math.sin(rad)).toFixed(2)}" x2="${(cx + radius * Math.cos(rad)).toFixed(2)}" y2="${(cy + radius * Math.sin(rad)).toFixed(2)}" stroke="${isWeek ? brassColor : trackColor}" stroke-width="${isWeek ? 1.9 : 1.1}" stroke-linecap="round" />`;
+        }
+
+        const markersSvg = itemsWithin30
+          .map((item) => {
+            const rad = ((-90 + (item.daysFromToday ?? 0) * 12) * Math.PI) / 180;
+            const mx = (cx + radius * Math.cos(rad)).toFixed(2);
+            const my = (cy + radius * Math.sin(rad)).toFixed(2);
+            const isSelected = selectedItem && selectedItem.id === item.id;
+            return `
+              <g role="button" tabindex="0" data-select-ring-id="${item.id}" class="cursor-pointer">
+                ${isSelected ? `<circle cx="${mx}" cy="${my}" r="15" fill="${brassColor}" fill-opacity="0.18" /><circle cx="${mx}" cy="${my}" r="10.5" fill="none" stroke="${brassColor}" stroke-width="1.2" />` : ''}
+                <circle cx="${mx}" cy="${my}" r="${isSelected ? 7.5 : 5.5}" fill="${brassColor}" stroke="${ringBg}" stroke-width="1.8" />
+              </g>
+            `;
+          })
+          .join('');
+
+        return `
+          <div class="flex flex-col items-center">
+            <div class="relative w-full max-w-[310px] aspect-square flex items-center justify-center">
+              <svg viewBox="0 0 ${size} ${size}" class="w-full h-full overflow-visible">
+                <circle cx="${cx}" cy="${cy}" r="${radius + 12}" fill="none" stroke="${trackColor}" stroke-width="1" />
+                <circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="${trackColor}" stroke-width="1.8" />
+                ${ticksSvg}
+                <circle cx="${cx}" cy="${cy - radius}" r="6" fill="${verdigrisColor}" stroke="${ringBg}" stroke-width="1.8" />
+                <text x="${cx}" y="${cy - radius - 14}" text-anchor="middle" fill="${verdigrisColor}" font-size="11" font-weight="600">Today</text>
+                ${markersSvg}
+              </svg>
+
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-12 pointer-events-none">
+                ${
+                  selectedItem
+                    ? `
+                      <span class="font-serif-display text-6xl font-bold leading-none" style="color: var(--text-primary);">${selectedItem.daysFromToday}</span>
+                      <span class="text-xs font-medium mt-1 neo-muted">${selectedItem.daysFromToday === 1 ? 'day left' : 'days left'}</span>
+                      <p class="font-serif-display text-lg font-bold leading-tight mt-2 line-clamp-2">${escapeHtml(selectedItem.title)}</p>
+                      <span class="text-xs mt-1 font-medium neo-brass-text">${escapeHtml(selectedItem.dueDateDisplay)} · ${escapeHtml(selectedItem.amount)}</span>
+                    `
+                    : `<p class="font-serif-display text-xl font-bold">Ring is clear</p><span class="text-xs mt-1 neo-muted">Add your first bill</span>`
+                }
+              </div>
+            </div>
+
+            ${selectedItem ? `<div class="mt-2"><button type="button" id="mark-paid-btn" data-mark-paid-id="${selectedItem.id}" class="px-4 py-2 rounded-[10px] text-xs btn-secondary">Mark as paid</button></div>` : ''}
+
+            <div class="flex flex-wrap items-center justify-between w-full pt-4 mt-4 border-t text-xs neo-muted" style="border-color: var(--brass-border);">
+              <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full" style="background-color: var(--verdigris);"></span><span>Today (${escapeHtml(getTodayShortIST())})</span></span>
+              <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full" style="background-color: var(--brass-accent);"></span><span>Approved marker (next 30 days)</span></span>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderTodayTab() {
+        const sorted = getSortedRecords();
+        const itemsWithin30 = sorted.filter((r) => (r.daysFromToday ?? 999) <= 30);
+        const selectedItem = sorted.find((r) => r.id === state.selectedRingItemId) || sorted[0] || null;
+        if (selectedItem) state.selectedRingItemId = selectedItem.id;
+
+        const rowsHtml = state.recordsLoading
+          ? `<div class="py-10 text-center text-sm neo-muted">Loading your archive…</div>`
+          : sorted.length === 0
+          ? `
+            <div class="py-10 text-center space-y-3">
+              <p class="font-serif-display text-2xl font-bold">Your archive is ready</p>
+              <p class="text-sm neo-muted max-w-sm mx-auto">Upload a bill, snap a receipt, or test our live AI scanner on a sample electricity bill to plot your first reminder.</p>
+              <button type="button" id="empty-add-first-btn" class="px-4 py-2.5 rounded-[10px] text-xs btn-primary">+ Add your first document</button>
+            </div>
+          `
+          : sorted
+              .map((item) => {
+                const isSelected = selectedItem && selectedItem.id === item.id;
+                const beyond30 = (item.daysFromToday ?? 0) > 30;
+                return `
+                  <div role="button" tabindex="0" data-select-row-id="${item.id}" style="${isSelected ? 'border-color: var(--brass-accent); background-color: var(--input-bg);' : ''}" class="p-4 neo-subpanel transition-colors cursor-pointer flex items-center justify-between gap-4 hover:border-[#D4AE5E]">
+                    <div class="flex items-center gap-4 min-w-0">
+                      <div class="w-14 shrink-0 text-center pr-3 border-r" style="border-color: var(--panel-border);">
+                        <span class="font-serif-display text-3xl font-bold block leading-none neo-brass-text">${item.daysFromToday}d</span>
+                        <span class="text-[11px] block mt-1 neo-muted">${escapeHtml((item.dueDateDisplay || '').replace(/\s\d{4}$/, ''))}</span>
+                      </div>
+                      <div class="min-w-0">
+                        <div class="flex flex-wrap items-center gap-2">
+                          <h3 class="font-semibold text-sm sm:text-base truncate">${escapeHtml(item.title)}</h3>
+                          ${getCategoryBadgeHtml(item.category)}
+                          ${beyond30 ? `<span class="text-[11px] font-medium px-2 py-0.5 rounded-full border neo-muted" style="border-color: var(--panel-border);">Beyond 30-day ring</span>` : ''}
+                        </div>
+                        <p class="text-xs sm:text-sm mt-1 neo-muted">${escapeHtml(item.issuer)} • <span class="font-semibold">${escapeHtml(item.amount)}</span></p>
+                      </div>
+                    </div>
+                    <span class="hidden sm:inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full border shrink-0" style="background-color: var(--highlight-green-bg); color: var(--verdigris); border-color: var(--highlight-green-border);">
+                      <span>${escapeHtml(item.status)}</span>
+                    </span>
+                  </div>
+                `;
+              })
+              .join('');
+
+        return `
+          <section class="space-y-7">
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+              <div>
+                <p class="text-sm font-medium neo-brass-text">${escapeHtml(getTodayGreeting())}</p>
+                <h1 class="font-serif-display text-3xl sm:text-4xl font-bold tracking-tight mt-0.5">Today</h1>
+                <p class="text-sm mt-1 neo-muted">Your next 30 days of approved bills, bookings, and renewals on a single dial.</p>
+              </div>
+              <button type="button" id="today-add-btn" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-sm btn-primary self-start sm:self-auto">
+                <span>+ Add document</span>
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              <div class="lg:col-span-5 p-6 neo-panel">
+                <div class="flex items-center justify-between mb-3">
+                  <h2 class="font-serif-display text-xl font-bold">Next 30 days · ${itemsWithin30.length} on ring</h2>
+                </div>
+                ${buildThirtyDayRingSvg(itemsWithin30, selectedItem)}
+              </div>
+
+              <div class="lg:col-span-7 p-5 sm:p-6 space-y-4 neo-panel">
+                <div class="flex items-center justify-between">
+                  <h2 class="font-serif-display text-2xl font-bold">Coming up</h2>
+                  <span class="text-xs neo-muted">Select a row to inspect on the ring</span>
+                </div>
+                <div class="space-y-2.5">${rowsHtml}</div>
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      // ----------------------------------------------------------------------
+      // ADD DOCUMENT TAB — LIVE GEMINI EXTRACTION
+      // ----------------------------------------------------------------------
+      function resetScanState() {
+        state.scanResult = null;
+        state.isScanning = false;
+        state.selectedChoiceId = null;
+        state.uploadError = '';
+        state.draftTitle = '';
+        state.draftIssuer = '';
+        state.draftCategory = 'Bill';
+        state.draftAmount = '';
+        state.draftDueDate = '';
+        state.draftReminderTiming = state.permissions.leadTime || '2 days before';
+      }
+
+      async function runLiveExtraction({ file = null, text = null }) {
+        state.uploadError = '';
+        state.isScanning = true;
+        state.scanResult = null;
+        state.selectedChoiceId = null;
+        render();
+
+        try {
+          const formData = new FormData();
+          if (file) formData.append('file', file);
+          if (text) formData.append('text', text);
+
+          const res = await apiFetch('/api/extract', {
+            method: 'POST',
+            body: formData
+          });
+
+          const ext = res.extracted;
+          state.scanResult = res;
+          state.draftTitle = ext.title || '';
+          state.draftIssuer = ext.issuer || '';
+          state.draftCategory = ['Bill', 'Booking', 'Warranty'].includes(ext.category) ? ext.category : 'Bill';
+          state.draftAmount = ext.amount || '₹0';
+          state.draftDueDate = ext.is_date_ambiguous ? '' : (ext.due_date || '');
+          state.draftReminderTiming = state.permissions.leadTime || '2 days before';
+        } catch (err) {
+          state.uploadError = err.message || 'Could not extract details from this document.';
+        } finally {
+          state.isScanning = false;
+          render();
+        }
+      }
+
+      function renderAddTab() {
+        const errorBanner = state.uploadError
+          ? `<div role="alert" class="p-4 rounded-[14px] border flex items-center justify-between gap-3" style="background-color: var(--amber-card-bg); border-color: var(--amber-card-border);"><span class="text-sm">${escapeHtml(state.uploadError)}</span><button type="button" id="close-upload-error" class="text-xs underline">Close</button></div>`
+          : '';
+
+        if (state.isScanning) {
+          return `
+            <section class="space-y-6">
+              <div>
+                <h1 class="font-serif-display text-3xl sm:text-4xl font-bold">Reading your document…</h1>
+                <p class="text-sm mt-1 neo-muted">LOOP is extracting the issuer, amount, and checking for any ambiguous dates.</p>
+              </div>
+              <div class="max-w-xl mx-auto p-8 neo-panel relative overflow-hidden text-center space-y-4" style="border-color: var(--brass-border);">
+                <div class="scan-beam-loop"><div class="h-[2px] w-full bg-[#D4AE5E]"></div></div>
+                <div class="w-14 h-14 mx-auto rounded-full border-2 flex items-center justify-center neo-brass-text font-serif-display text-2xl font-bold" style="border-color: var(--brass-accent);">L</div>
+                <h2 class="font-serif-display text-2xl font-bold">Analyzing evidence with AI</h2>
+                <p class="text-xs neo-muted">This usually takes 2–5 seconds. Nothing will be scheduled until you approve.</p>
+              </div>
+            </section>
+          `;
+        }
+
+        if (!state.scanResult) {
+          const tabsHtml = [
+            { id: 'file', label: 'Upload file' },
+            { id: 'text', label: 'Paste text' },
+            { id: 'voice', label: 'Voice note' }
+          ]
+            .map((t) => `<button type="button" data-add-tab="${t.id}" class="py-2.5 px-3 rounded-[10px] text-sm font-medium ${state.addInputTab === t.id ? 'btn-primary' : 'neo-muted'}">${t.label}</button>`)
+            .join('');
+
+          let bodyHtml = '';
+          if (state.addInputTab === 'file') {
+            bodyHtml = `
+              <div class="p-6 sm:p-8 flex flex-col items-center neo-panel">
+                <div class="neoclassical-arch w-full max-w-md p-2 border-2" style="border-color: var(--brass-accent); background-color: var(--subpanel-bg);">
+                  <div class="neoclassical-arch w-full pt-14 pb-9 px-6 border flex flex-col items-center text-center" style="border-color: var(--panel-border); background-color: var(--input-bg);">
+                    <input id="file-upload-input" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" class="hidden" />
+                    <h2 class="font-serif-display text-2xl font-bold">Upload your document</h2>
+                    <p class="text-xs sm:text-sm mt-1.5 max-w-xs neo-muted">Supports PDF, JPG, or PNG bills, travel bookings, receipts, and warranties (max 10 MB)</p>
+                    <div class="mt-6 flex flex-col sm:flex-row items-center gap-2.5 w-full justify-center">
+                      <button type="button" id="choose-file-btn" class="px-4 py-2.5 rounded-[10px] text-sm btn-primary">Choose file</button>
+                      <button type="button" id="scan-sample-btn" class="px-4 py-2.5 rounded-[10px] text-sm btn-secondary">Test with sample bill</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+          } else if (state.addInputTab === 'text') {
+            bodyHtml = `
+              <div class="p-6 sm:p-8 space-y-4 neo-panel">
+                <div class="flex items-center justify-between gap-2">
+                  <label for="paste-doc-textarea" class="text-sm font-medium">Paste bill, SMS, or confirmation text</label>
+                  <button type="button" id="fill-sample-text-btn" class="text-xs font-medium underline neo-brass-text">Fill sample bill text</button>
+                </div>
+                <textarea id="paste-doc-textarea" rows="5" placeholder="Paste the text of your electricity bill, booking confirmation, or receipt…" class="w-full rounded-[10px] p-3.5 text-sm neo-input">${escapeHtml(state.pastedText)}</textarea>
+                <div class="flex items-center justify-end">
+                  <button type="button" id="extract-text-btn" class="px-4 py-2.5 rounded-[10px] text-sm btn-primary">Scan with AI</button>
+                </div>
+              </div>
+            `;
+          } else {
+            bodyHtml = `
+              <div class="p-8 text-center space-y-5 neo-panel">
+                <h2 class="font-serif-display text-2xl font-bold">${state.isRecording ? `Recording… 00:${String(state.recordingSeconds).padStart(2, '0')}` : 'Record a spoken bill or reminder'}</h2>
+                <p class="text-sm max-w-md mx-auto neo-muted">Speak the issuer, amount, and due date (e.g., “Remind me my Airtel broadband bill of 1199 rupees is due on 15 December”), then tap stop.</p>
+                <div class="flex items-center justify-center gap-3">
+                  <button type="button" id="toggle-voice-btn" class="px-5 py-2.5 rounded-[10px] text-sm btn-primary">${state.isRecording ? 'Stop & extract' : 'Start recording'}</button>
+                  <button type="button" id="scan-sample-from-voice-btn" class="px-4 py-2.5 rounded-[10px] text-sm btn-secondary">Test with sample bill</button>
+                </div>
+              </div>
+            `;
+          }
+
+          return `
+            <section class="space-y-6">
+              <div>
+                <h1 class="font-serif-display text-3xl sm:text-4xl font-bold">Add document</h1>
+                <p class="text-sm mt-1 neo-muted">Upload a bill, booking, receipt, or warranty. Nothing is scheduled without your approval.</p>
+              </div>
+              ${errorBanner}
+              <div class="max-w-2xl mx-auto space-y-6">
+                <div class="grid grid-cols-3 gap-1.5 p-1.5 neo-panel">${tabsHtml}</div>
+                ${bodyHtml}
+              </div>
+            </section>
+          `;
+        }
+
+        // REVIEW SCREEN AFTER LIVE EXTRACTION
+        const ext = state.scanResult.extracted;
+        const needsDisambiguation = Boolean(ext.is_date_ambiguous && ext.date_choices && ext.date_choices.length > 0 && !state.draftDueDate);
+        const questionCard = needsDisambiguation
+          ? `
+            <div class="p-5 rounded-[14px] border-2 space-y-3" style="background-color: var(--amber-card-bg); border-color: var(--amber-card-border);">
+              <h3 class="font-serif-display text-xl font-bold">Which date is the due date?</h3>
+              <p class="text-xs neo-muted">${escapeHtml(ext.ambiguity_reason || 'Multiple date interpretations were detected. Please pick the right one.')}</p>
+              <div class="space-y-2">
+                ${ext.date_choices
+                  .map((c) => `<button type="button" data-date-choice-id="${escapeHtml(c.id)}" data-date-choice-val="${escapeHtml(c.due_date)}" class="w-full text-left p-3 rounded-[10px] text-xs font-medium flex items-center justify-between btn-secondary"><span>${escapeHtml(c.label)}</span><span class="px-2 py-0.5 rounded bg-[#D4AE5E] text-[#0A1228] font-semibold">Choose</span></button>`)
+                  .join('')}
+              </div>
+            </div>
+          `
+          : '';
+
+        const isApproveEnabled = !state.isApproving && Boolean(state.draftTitle.trim()) && Boolean(state.draftIssuer.trim()) && Boolean(state.draftDueDate);
+
+        return `
+          <section class="space-y-6">
+            <div>
+              <h1 class="font-serif-display text-3xl sm:text-4xl font-bold">Review extracted evidence</h1>
+              <p class="text-sm mt-1 neo-muted">Verify the highlighted details below before adding to your 30-day ring.</p>
+            </div>
+            ${errorBanner}
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              <div class="lg:col-span-7 neo-panel p-5 sm:p-6 space-y-4">
+                <div class="pb-3 border-b flex items-center justify-between gap-2" style="border-color: var(--panel-border);">
+                  <div>
+                    <h2 class="font-serif-display text-2xl font-bold">${escapeHtml(ext.doc_header || ext.title)}</h2>
+                    <p class="text-xs neo-muted">${escapeHtml(ext.doc_subheader || ext.issuer)}</p>
+                  </div>
+                  <span class="text-xs font-mono px-2.5 py-1 neo-subpanel neo-muted shrink-0">${escapeHtml(ext.reference_code || 'DOC')}</span>
+                </div>
+                ${(ext.sections || [])
+                  .map((s) => `
+                    <div class="p-3.5 neo-subpanel" style="background-color: var(--highlight-green-bg); border-color: var(--highlight-green-border);">
+                      <span class="text-xs neo-muted block">${escapeHtml(s.label)}</span>
+                      <p class="text-sm font-semibold">${escapeHtml(s.text)}</p>
+                    </div>
+                  `)
+                  .join('')}
+                <div class="p-3.5 neo-subpanel">
+                  <span class="text-xs neo-muted block">Grounded summary</span>
+                  <p class="text-xs mt-1 leading-relaxed">${escapeHtml(ext.snippet)}</p>
+                </div>
+              </div>
+
+              <div class="lg:col-span-5 space-y-4">
+                ${questionCard}
+                <div class="p-5 space-y-3.5 neo-panel">
+                  <h3 class="font-serif-display text-xl font-bold">Approve details</h3>
+                  <div>
+                    <label class="block text-xs font-medium mb-1 neo-muted">Title</label>
+                    <input id="draft-title-input" type="text" value="${escapeHtml(state.draftTitle)}" class="w-full px-3 py-2 rounded-[10px] text-sm neo-input" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium mb-1 neo-muted">Issuer</label>
+                    <input id="draft-issuer-input" type="text" value="${escapeHtml(state.draftIssuer)}" class="w-full px-3 py-2 rounded-[10px] text-sm neo-input" />
+                  </div>
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-xs font-medium mb-1 neo-muted">Category</label>
+                      <select id="draft-category-select" class="w-full px-3 py-2 rounded-[10px] text-sm neo-input">
+                        <option value="Bill" ${state.draftCategory === 'Bill' ? 'selected' : ''}>Bill</option>
+                        <option value="Booking" ${state.draftCategory === 'Booking' ? 'selected' : ''}>Booking</option>
+                        <option value="Warranty" ${state.draftCategory === 'Warranty' ? 'selected' : ''}>Warranty</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium mb-1 neo-muted">Amount</label>
+                      <input id="draft-amount-input" type="text" value="${escapeHtml(state.draftAmount)}" class="w-full px-3 py-2 rounded-[10px] text-sm neo-input" />
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-xs font-medium mb-1 neo-muted">Due date</label>
+                      <input id="draft-duedate-input" type="date" value="${escapeHtml(state.draftDueDate)}" class="w-full px-3 py-2 rounded-[10px] text-sm neo-input" />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium mb-1 neo-muted">Remind me</label>
+                      <select id="draft-timing-select" class="w-full px-3 py-2 rounded-[10px] text-sm neo-input">
+                        ${['1 day before', '2 days before', '3 days before', '1 week before']
+                          .map((t) => `<option value="${t}" ${state.draftReminderTiming === t ? 'selected' : ''}>${t}</option>`)
+                          .join('')}
+                      </select>
+                    </div>
+                  </div>
+                  <div class="pt-2 space-y-2">
+                    <button type="button" id="approve-reminder-btn" ${isApproveEnabled ? '' : 'disabled'} class="w-full py-2.5 px-4 rounded-[10px] text-sm btn-primary">
+                      ${state.isApproving ? 'Saving…' : 'Approve reminder'}
+                    </button>
+                    <button type="button" id="dismiss-scan-btn" class="w-full py-2 px-4 rounded-[10px] text-sm btn-secondary">
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      // ----------------------------------------------------------------------
+      // VAULT TAB
+      // ----------------------------------------------------------------------
+      function renderVaultTab() {
+        const q = state.vaultSearch.trim().toLowerCase();
+        const filtered = getSortedRecords().filter((rec) => {
+          const matchesType = state.vaultFilter === 'All' || rec.category === state.vaultFilter;
+          const matchesSearch = !q ||
+            (rec.title || '').toLowerCase().includes(q) ||
+            (rec.issuer || '').toLowerCase().includes(q) ||
+            (rec.snippet || '').toLowerCase().includes(q);
+          return matchesType && matchesSearch;
+        });
+
+        const filterButtons = ['All', 'Bill', 'Booking', 'Warranty']
+          .map((type) => `<button type="button" data-vault-filter="${type}" class="px-3.5 py-2 rounded-[10px] text-xs font-medium ${state.vaultFilter === type ? 'btn-primary' : 'btn-secondary'}">${type}</button>`)
+          .join('');
+
+        return `
+          <section class="space-y-6">
+            <div>
+              <h1 class="font-serif-display text-3xl sm:text-4xl font-bold">Vault</h1>
+              <p class="text-sm mt-1 neo-muted">Searchable archive of approved bills, bookings, and warranties with verified originals.</p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3">
+              <input id="vault-search-input" type="search" value="${escapeHtml(state.vaultSearch)}" placeholder="Search saved records…" class="flex-1 px-4 py-2.5 rounded-[12px] text-sm neo-input" />
+              <div class="flex flex-wrap items-center gap-1.5">${filterButtons}</div>
+            </div>
+            ${
+              filtered.length === 0
+                ? `<div class="p-10 text-center neo-panel space-y-2"><p class="font-serif-display text-xl font-bold">No matching records</p><p class="text-xs neo-muted">Try clearing your filter or add a new document.</p></div>`
+                : `
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    ${filtered
+                      .map((rec) => `
+                        <div class="p-5 flex flex-col justify-between gap-4 neo-panel">
+                          <div class="space-y-2">
+                            <div class="flex items-center justify-between gap-2">${getCategoryBadgeHtml(rec.category)}<span class="text-xs neo-muted">Saved ${escapeHtml(formatShortSavedDate(rec.created_at))}</span></div>
+                            <h2 class="font-serif-display text-xl font-bold">${escapeHtml(rec.title)}</h2>
+                            <p class="text-xs neo-muted">${escapeHtml(rec.issuer)}</p>
+                            <p class="text-xs leading-relaxed neo-muted">${escapeHtml(rec.snippet)}</p>
+                          </div>
+                          <div class="pt-3.5 border-t flex items-center justify-between gap-2" style="border-color: var(--panel-border);">
+                            <div class="text-xs"><span class="font-semibold">${escapeHtml(rec.amount)}</span> <span class="neo-muted">• ${escapeHtml(rec.dueDateDisplay)}</span></div>
+                            <button type="button" data-open-original-id="${rec.id}" class="px-3 py-1.5 rounded-lg text-xs btn-secondary">Open original</button>
+                          </div>
+                        </div>
+                      `)
+                      .join('')}
+                  </div>
+                `
+            }
+          </section>
+        `;
+      }
+
+      // ----------------------------------------------------------------------
+      // ASK LOOP TAB — LIVE GROUNDED AI Q&A
+      // ----------------------------------------------------------------------
+      async function executeGroundedAsk(questionText) {
+        const q = (questionText !== undefined ? questionText : state.askQuery).trim();
+        if (questionText !== undefined) state.askQuery = questionText;
+        if (q.length < 2) return;
+
+        state.askLoading = true;
+        state.askResult = null;
+        render();
+
+        try {
+          const res = await apiFetch('/api/ask', {
+            method: 'POST',
+            body: JSON.stringify({ question: q })
+          });
+          state.askResult = res;
+        } catch (err) {
+          showToast(err.message || 'Could not reach Ask LOOP.');
+        } finally {
+          state.askLoading = false;
+          render();
+        }
+      }
+
+      function renderAskTab() {
+        const presets = [
+          'What is my next upcoming bill?',
+          'How much do I owe this month?',
+          'Do I have any travel bookings saved?',
+          'When does my earliest warranty expire?'
+        ];
+
+        const resultHtml = state.askLoading
+          ? `<div class="p-8 text-center neo-panel text-sm neo-muted">Searching your verified Vault records…</div>`
+          : state.askResult
+          ? `
+            <div class="p-6 sm:p-8 space-y-5 neo-panel">
+              <span class="text-xs font-medium" style="color: ${state.askResult.found ? 'var(--verdigris)' : 'var(--brass-accent)'};">
+                ${state.askResult.found ? 'Grounded in saved Vault record' : 'No matching record'}
+              </span>
+              <p class="font-serif-display text-2xl sm:text-3xl font-semibold leading-snug">${escapeHtml(state.askResult.answer)}</p>
+              ${
+                state.askResult.found && state.askResult.source
+                  ? `
+                    <div class="p-4 space-y-2 neo-subpanel">
+                      <div class="flex items-center justify-between gap-2">
+                        <span class="font-semibold text-sm">${escapeHtml(state.askResult.source.title)}</span>
+                        <button type="button" id="ask-open-source-btn" data-open-source-id="${state.askResult.source.id}" class="px-3 py-1.5 rounded-lg text-xs btn-primary">Open source</button>
+                      </div>
+                      <p class="text-xs neo-muted">“${escapeHtml(state.askResult.source.snippet)}”</p>
+                    </div>
+                  `
+                  : ''
+              }
+            </div>
+          `
+          : '';
+
+        return `
+          <section class="max-w-3xl mx-auto space-y-6">
+            <div>
+              <h1 class="font-serif-display text-3xl sm:text-4xl font-bold">Ask LOOP</h1>
+              <p class="text-sm mt-1 neo-muted">Answers come exclusively from your saved Vault records and cite the verified source document.</p>
+            </div>
+            <form id="ask-loop-form" class="p-2 flex items-center gap-2 neo-panel">
+              <input id="ask-loop-input" type="text" value="${escapeHtml(state.askQuery)}" placeholder="Ask about your bills, trips, or warranties…" class="flex-1 bg-transparent py-2 px-3 text-sm focus:outline-none" />
+              <button type="submit" ${state.askLoading ? 'disabled' : ''} class="px-4 py-2 rounded-[10px] text-sm btn-primary">${state.askLoading ? 'Asking…' : 'Ask'}</button>
+            </form>
+            <div class="flex flex-wrap gap-2">
+              ${presets.map((q) => `<button type="button" data-ask-preset="${escapeHtml(q)}" class="px-3 py-1.5 rounded-[10px] text-xs btn-secondary">${escapeHtml(q)}</button>`).join('')}
+            </div>
+            ${resultHtml}
+          </section>
+        `;
+      }
+
+      // ----------------------------------------------------------------------
+      // SETTINGS TAB — REAL EXPORT & PERMANENT DELETE
+      // ----------------------------------------------------------------------
+      function renderSettingsTab() {
+        return `
+          <section class="max-w-3xl mx-auto space-y-6">
+            <div>
+              <h1 class="font-serif-display text-3xl sm:text-4xl font-bold">Settings</h1>
+              <p class="text-sm mt-1 neo-muted">Manage your account, permissions, JSON export, and permanent data deletion.</p>
+            </div>
+
+            <div class="p-6 space-y-4 neo-panel">
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 class="font-serif-display text-xl font-bold">${escapeHtml(state.userName)}</h2>
+                  <p class="text-xs neo-muted">${escapeHtml(state.userEmail)} · Plan: <strong>${escapeHtml(state.planTier.replace('_', ' '))}</strong> (${state.records.length}/${state.maxActiveRecords} active)</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" data-go-route="permissions" class="px-3.5 py-2 rounded-[10px] text-xs btn-secondary">Review permissions</button>
+                  <button type="button" id="sign-out-btn" class="px-3.5 py-2 rounded-[10px] text-xs btn-primary">Sign out</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-6 space-y-4 neo-panel">
+              <h2 class="font-serif-display text-xl font-bold">Archive portability &amp; privacy</h2>
+              <p class="text-xs neo-muted">Export every record you have approved as a clean JSON file, or permanently erase all records and uploaded files from LOOP.</p>
+              <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+                <button type="button" id="export-data-btn" class="px-4 py-2.5 rounded-[10px] text-sm btn-secondary">Export my data (JSON)</button>
+                ${
+                  state.confirmDeleteAll
+                    ? `
+                      <div class="flex items-center gap-2">
+                        <button type="button" id="cancel-delete-all-btn" class="px-3 py-2 rounded-[10px] text-xs btn-secondary">Cancel</button>
+                        <button type="button" id="confirm-delete-all-btn" ${state.deletingAll ? 'disabled' : ''} class="px-3.5 py-2 rounded-[10px] text-xs font-semibold border cursor-pointer" style="border-color: var(--danger-border); background-color: var(--danger-bg); color: var(--danger-text);">
+                          ${state.deletingAll ? 'Deleting…' : 'Yes, permanently delete all'}
+                        </button>
+                      </div>
+                    `
+                    : `<button type="button" id="request-delete-all-btn" class="px-4 py-2.5 rounded-[10px] text-sm border rounded-[10px] cursor-pointer" style="border-color: var(--danger-border); color: var(--danger-text);">Delete all my records</button>`
+                }
+              </div>
+            </div>
+          </section>
+        `;
+      }
+
+      // ----------------------------------------------------------------------
+      // MODALS: CERTIFICATE (WITH SIGNED URL), FEEDBACK, WAITLIST
+      // ----------------------------------------------------------------------
+      async function openCertificateModal(record) {
+        if (!record) return;
+        const modal = document.getElementById('certificate-modal');
+        const linkEl = document.getElementById('modal-original-link');
+        linkEl.classList.add('hidden');
+        linkEl.href = '#';
+
+        document.getElementById('modal-title').textContent = record.title;
+        document.getElementById('modal-subtitle').textContent = `${record.source_type || 'Document'} • Saved ${formatShortSavedDate(record.created_at)}`;
+        document.getElementById('modal-footer-note').textContent = `Scheduled for ${record.dueDateDisplay || formatDisplayDate(record.due_date)} (${record.reminder_timing || '2 days before'})`;
+        document.getElementById('modal-body').innerHTML = `
+          <div class="pb-3 border-b flex items-start justify-between gap-2" style="border-color: var(--panel-border);">
+            <div>
+              <p class="font-serif-display text-lg font-bold">${escapeHtml(record.doc_header || record.title)}</p>
+              <p class="text-xs mt-0.5 neo-muted">${escapeHtml(record.doc_subheader || record.issuer)}</p>
+            </div>
+            <span class="text-xs font-mono px-2.5 py-1 neo-subpanel neo-muted">${escapeHtml(record.reference_code || 'CERT')}</span>
+          </div>
+          <div class="space-y-3">
+            ${(record.sections || []).map((s) => `<div class="p-3.5 rounded-[10px] border" style="background-color: var(--highlight-green-bg); border-color: var(--highlight-green-border);"><span class="block text-xs font-medium mb-1 neo-muted">${escapeHtml(s.label)}</span><p class="text-sm font-medium">${escapeHtml(s.text)}</p></div>`).join('')}
+          </div>
+        `;
+        modal.classList.remove('hidden');
+
+        if (record.file_path) {
+          try {
+            const res = await apiFetch(`/api/records/${record.id}/original`);
+            if (res && res.signed_url) {
+              linkEl.href = res.signed_url;
+              linkEl.classList.remove('hidden');
+            }
+          } catch (_) {
+            // Silently keep certificate view even if file URL fails
+          }
+        }
+      }
+
+      function closeCertificateModal() {
+        document.getElementById('certificate-modal').classList.add('hidden');
+      }
+
+      function openFeedbackModal() {
+        document.getElementById('feedback-modal').classList.remove('hidden');
+      }
+
+      function closeFeedbackModal() {
+        document.getElementById('feedback-modal').classList.add('hidden');
+      }
+
+      function openWaitlistModal(tier) {
+        state.activeWaitlistTier = tier;
+        document.getElementById('waitlist-modal-tier-label').textContent = `${tier} — Coming soon`;
+        const emailIn = document.getElementById('waitlist-email-input');
+        if (emailIn && state.userEmail) emailIn.value = state.userEmail;
+        document.getElementById('waitlist-modal').classList.remove('hidden');
+      }
+
+      function closeWaitlistModal() {
+        document.getElementById('waitlist-modal').classList.add('hidden');
+      }
+
+      // ----------------------------------------------------------------------
+      // DASHBOARD EVENT BINDING
+      // ----------------------------------------------------------------------
+      async function handleSignOut() {
+        if (supabaseClient) await supabaseClient.auth.signOut();
+        state.session = null;
+        state.isAuthenticated = false;
+        state.permissionsGranted = false;
+        state.records = [];
+        state.askResult = null;
+        resetScanState();
+        showToast('Signed out');
+        navigateTo('landing');
+      }
+
+      function bindDashboardEvents() {
+        document.querySelectorAll('[data-go-route]').forEach((btn) => {
+          btn.addEventListener('click', () => navigateTo(btn.getAttribute('data-go-route')));
+        });
+        document.querySelectorAll('[data-app-tab]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const tab = btn.getAttribute('data-app-tab');
+            if (tab === 'add') resetScanState();
+            navigateTo('app', tab);
+          });
+        });
+
+        const toggleTheme = () => { state.lightMode = !state.lightMode; render(); };
+        const t1 = document.getElementById('dash-theme-toggle');
+        const t2 = document.getElementById('dash-mobile-theme-toggle');
+        if (t1) t1.addEventListener('click', toggleTheme);
+        if (t2) t2.addEventListener('click', toggleTheme);
+
+        const fb1 = document.getElementById('open-feedback-btn');
+        const fb2 = document.getElementById('open-feedback-mobile-btn');
+        if (fb1) fb1.addEventListener('click', openFeedbackModal);
+        if (fb2) fb2.addEventListener('click', openFeedbackModal);
+
+        const mobileMenuBtn = document.getElementById('dash-mobile-menu-btn');
+        if (mobileMenuBtn) {
+          mobileMenuBtn.addEventListener('click', () => { state.mobileMenuOpen = !state.mobileMenuOpen; render(); });
+        }
+
+        // Today tab
+        ['today-add-btn', 'empty-add-first-btn'].forEach((id) => {
+          const btn = document.getElementById(id);
+          if (btn) btn.addEventListener('click', () => { resetScanState(); navigateTo('app', 'add'); });
+        });
+        document.querySelectorAll('[data-select-ring-id], [data-select-row-id]').forEach((el) => {
+          el.addEventListener('click', () => {
+            state.selectedRingItemId = el.getAttribute('data-select-ring-id') || el.getAttribute('data-select-row-id');
+            render();
+          });
+        });
+        const markPaid = document.getElementById('mark-paid-btn');
+        if (markPaid) {
+          markPaid.addEventListener('click', async () => {
+            const id = markPaid.getAttribute('data-mark-paid-id');
+            try {
+              await apiFetch(`/api/records/${id}/pay`, { method: 'PATCH' });
+              state.records = state.records.filter((r) => r.id !== id);
+              const next = getSortedRecords();
+              state.selectedRingItemId = next[0] ? next[0].id : null;
+              showToast('Marked as paid');
+              render();
+            } catch (err) {
+              showToast(err.message || 'Could not update record.');
+            }
+          });
+        }
+
+        // Add document tab
+        const closeErr = document.getElementById('close-upload-error');
+        if (closeErr) closeErr.addEventListener('click', () => { state.uploadError = ''; render(); });
+
+        document.querySelectorAll('[data-add-tab]').forEach((btn) => {
+          btn.addEventListener('click', () => { state.addInputTab = btn.getAttribute('data-add-tab'); render(); });
+        });
+
+        const sampleBillText = 'BESCOM Electricity Supply — Account ID: 849201742. Billing Period: Nov 2026. Amount Due: ₹3,420.00. Due Date: 12/12/2026 (Billing cycle cutoff: 11 Dec 2026).';
+        ['scan-sample-btn', 'scan-sample-from-voice-btn'].forEach((id) => {
+          const btn = document.getElementById(id);
+          if (btn) btn.addEventListener('click', () => runLiveExtraction({ text: sampleBillText }));
+        });
+
+        const chooseFile = document.getElementById('choose-file-btn');
+        const fileInput = document.getElementById('file-upload-input');
+        if (chooseFile && fileInput) {
+          chooseFile.addEventListener('click', () => fileInput.click());
+          fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) runLiveExtraction({ file });
+          });
+        }
+
+        const fillSample = document.getElementById('fill-sample-text-btn');
+        if (fillSample) fillSample.addEventListener('click', () => { state.pastedText = sampleBillText; render(); });
+
+        const pasteArea = document.getElementById('paste-doc-textarea');
+        if (pasteArea) pasteArea.addEventListener('input', (e) => { state.pastedText = e.target.value; });
+
+        const extractTextBtn = document.getElementById('extract-text-btn');
+        if (extractTextBtn) {
+          extractTextBtn.addEventListener('click', () => {
+            if (state.pastedText.trim().length < 8) {
+              state.uploadError = 'Paste at least 8 characters of bill or confirmation text.';
+              render();
+              return;
+            }
+            runLiveExtraction({ text: state.pastedText.trim() });
+          });
+        }
+
+        const voiceBtn = document.getElementById('toggle-voice-btn');
+        if (voiceBtn) {
+          voiceBtn.addEventListener('click', async () => {
+            if (!state.isRecording) {
+              try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                audioChunks = [];
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = (ev) => { if (ev.data.size > 0) audioChunks.push(ev.data); };
+                mediaRecorder.onstop = () => {
+                  stream.getTracks().forEach((t) => t.stop());
+                  const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+                  const audioFile = new File([audioBlob], 'voice-note.webm', { type: audioBlob.type });
+                  runLiveExtraction({ file: audioFile });
+                };
+                mediaRecorder.start();
+                state.isRecording = true;
+                state.recordingSeconds = 0;
+                recordingInterval = setInterval(() => { state.recordingSeconds += 1; render(); }, 1000);
+                render();
+              } catch (_) {
+                state.uploadError = 'Microphone access was denied. Enable microphone permission in your browser or paste text instead.';
+                render();
+              }
+            } else {
+              state.isRecording = false;
+              clearInterval(recordingInterval);
+              if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+            }
+          });
+        }
+
+        document.querySelectorAll('[data-date-choice-id]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            state.selectedChoiceId = btn.getAttribute('data-date-choice-id');
+            state.draftDueDate = btn.getAttribute('data-date-choice-val');
+            render();
+          });
+        });
+
+        const titleIn = document.getElementById('draft-title-input');
+        if (titleIn) titleIn.addEventListener('input', (e) => { state.draftTitle = e.target.value; });
+        const issuerIn = document.getElementById('draft-issuer-input');
+        if (issuerIn) issuerIn.addEventListener('input', (e) => { state.draftIssuer = e.target.value; });
+        const catSel = document.getElementById('draft-category-select');
+        if (catSel) catSel.addEventListener('change', (e) => { state.draftCategory = e.target.value; });
+        const amtIn = document.getElementById('draft-amount-input');
+        if (amtIn) amtIn.addEventListener('input', (e) => { state.draftAmount = e.target.value; });
+        const dueIn = document.getElementById('draft-duedate-input');
+        if (dueIn) dueIn.addEventListener('change', (e) => { state.draftDueDate = e.target.value; render(); });
+        const timSel = document.getElementById('draft-timing-select');
+        if (timSel) timSel.addEventListener('change', (e) => { state.draftReminderTiming = e.target.value; });
+
+        const approveBtn = document.getElementById('approve-reminder-btn');
+        if (approveBtn) {
+          approveBtn.addEventListener('click', async () => {
+            if (!state.scanResult) return;
+            state.isApproving = true;
+            state.uploadError = '';
+            render();
+            try {
+              const ext = state.scanResult.extracted;
+              const numAmt = parseFloat(String(state.draftAmount).replace(/[^\d.]/g, '')) || 0;
+              const saved = await apiFetch('/api/records', {
+                method: 'POST',
+                body: JSON.stringify({
+                  title: state.draftTitle.trim(),
+                  issuer: state.draftIssuer.trim(),
+                  amount: state.draftAmount.trim() || '₹0',
+                  numeric_amount: numAmt,
+                  due_date: state.draftDueDate,
+                  category: state.draftCategory,
+                  reminder_timing: state.draftReminderTiming,
+                  source_type: state.scanResult.source_type || 'PDF Document',
+                  file_path: state.scanResult.file_path || null,
+                  doc_header: ext.doc_header || state.draftTitle.trim(),
+                  doc_subheader: ext.doc_subheader || state.draftIssuer.trim(),
+                  reference_code: ext.reference_code || 'CERT',
+                  sections: ext.sections || [],
+                  snippet: ext.snippet || `${state.draftTitle.trim()} (${state.draftAmount.trim()}) due ${state.draftDueDate}`
+                })
+              });
+              state.records.unshift(saved);
+              state.selectedRingItemId = saved.id;
+              resetScanState();
+              showToast('Reminder approved & saved');
+              navigateTo('app', 'today');
+            } catch (err) {
+              state.uploadError = err.message || 'Could not save reminder.';
+            } finally {
+              state.isApproving = false;
+              render();
+            }
+          });
+        }
+
+        const dismissBtn = document.getElementById('dismiss-scan-btn');
+        if (dismissBtn) dismissBtn.addEventListener('click', () => { resetScanState(); render(); });
+
+        // Vault tab
+        const vaultSearch = document.getElementById('vault-search-input');
+        if (vaultSearch) {
+          vaultSearch.addEventListener('input', (e) => {
+            state.vaultSearch = e.target.value;
+            render();
+            const refreshed = document.getElementById('vault-search-input');
+            if (refreshed) { refreshed.focus(); refreshed.setSelectionRange(refreshed.value.length, refreshed.value.length); }
+          });
+        }
+        document.querySelectorAll('[data-vault-filter]').forEach((btn) => {
+          btn.addEventListener('click', () => { state.vaultFilter = btn.getAttribute('data-vault-filter'); render(); });
+        });
+        document.querySelectorAll('[data-open-original-id]').forEach((btn) => {
+          btn.addEventListener('click', () => openCertificateModal(state.records.find((r) => r.id === btn.getAttribute('data-open-original-id'))));
+        });
+
+        // Ask LOOP tab
+        const askIn = document.getElementById('ask-loop-input');
+        if (askIn) askIn.addEventListener('input', (e) => { state.askQuery = e.target.value; });
+        const askForm = document.getElementById('ask-loop-form');
+        if (askForm) askForm.addEventListener('submit', (e) => { e.preventDefault(); executeGroundedAsk(); });
+        document.querySelectorAll('[data-ask-preset]').forEach((btn) => {
+          btn.addEventListener('click', () => executeGroundedAsk(btn.getAttribute('data-ask-preset')));
+        });
+        const askOpenSrc = document.getElementById('ask-open-source-btn');
+        if (askOpenSrc) {
+          askOpenSrc.addEventListener('click', () => {
+            const src = state.askResult && state.askResult.source;
+            if (src) openCertificateModal(src);
+          });
+        }
+
+        // Settings tab
+        const signOutBtn = document.getElementById('sign-out-btn');
+        if (signOutBtn) signOutBtn.addEventListener('click', handleSignOut);
+
+        const exportBtn = document.getElementById('export-data-btn');
+        if (exportBtn) {
+          exportBtn.addEventListener('click', async () => {
+            try {
+              const payload = await apiFetch('/api/export');
+              const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `loop-archive-${getTodayIST().toISOString().slice(0, 10)}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+              showToast('Archive exported as JSON');
+            } catch (err) {
+              showToast(err.message || 'Export failed.');
+            }
+          });
+        }
+
+        const reqDel = document.getElementById('request-delete-all-btn');
+        if (reqDel) reqDel.addEventListener('click', () => { state.confirmDeleteAll = true; render(); });
+        const cancelDel = document.getElementById('cancel-delete-all-btn');
+        if (cancelDel) cancelDel.addEventListener('click', () => { state.confirmDeleteAll = false; render(); });
+        const confirmDel = document.getElementById('confirm-delete-all-btn');
+        if (confirmDel) {
+          confirmDel.addEventListener('click', async () => {
+            state.deletingAll = true;
+            render();
+            try {
+              await apiFetch('/api/account/records', { method: 'DELETE' });
+              state.records = [];
+              state.selectedRingItemId = null;
+              state.confirmDeleteAll = false;
+              showToast('All records permanently deleted');
+            } catch (err) {
+              showToast(err.message || 'Delete failed.');
+            } finally {
+              state.deletingAll = false;
+              render();
+            }
+          });
+        }
+      }
+
+      // ----------------------------------------------------------------------
+      // MASTER RENDER
+      // ----------------------------------------------------------------------
+      function render() {
+        syncTheme();
+        const root = document.getElementById('root-app');
+
+        if (state.booting) {
+          root.innerHTML = `<div class="min-h-screen flex items-center justify-center"><div class="text-center space-y-3">${logoSvgHtml('w-10 h-12 mx-auto')}<p class="text-xs neo-muted">Opening LOOP…</p></div></div>`;
+          return;
+        }
+
+        if (state.route === 'landing') {
+          root.innerHTML = renderLandingPage();
+          bindLandingEvents();
+        } else if (state.route === 'login') {
+          root.innerHTML = renderAuthPage('login');
+          bindAuthEvents('login');
+        } else if (state.route === 'signup') {
+          root.innerHTML = renderAuthPage('signup');
+          bindAuthEvents('signup');
+        } else if (state.route === 'permissions') {
+          root.innerHTML = renderPermissionsPage();
+          bindPermissionsEvents();
+        } else {
+          let tabHtml = '';
+          if (state.appTab === 'today') tabHtml = renderTodayTab();
+          else if (state.appTab === 'add') tabHtml = renderAddTab();
+          else if (state.appTab === 'vault') tabHtml = renderVaultTab();
+          else if (state.appTab === 'ask') tabHtml = renderAskTab();
+          else if (state.appTab === 'settings') tabHtml = renderSettingsTab();
+
+          root.innerHTML = renderDashboardShell(tabHtml);
+          bindDashboardEvents();
+        }
+      }
+
+      // ----------------------------------------------------------------------
+      // STATIC MODAL WIRING (Certificate, Feedback, Waitlist)
+      // ----------------------------------------------------------------------
+      document.getElementById('modal-close-top').addEventListener('click', closeCertificateModal);
+      document.getElementById('modal-close-bottom').addEventListener('click', closeCertificateModal);
+      document.getElementById('certificate-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'certificate-modal') closeCertificateModal();
+      });
+
+      document.getElementById('feedback-close-btn').addEventListener('click', closeFeedbackModal);
+      document.getElementById('feedback-cancel-btn').addEventListener('click', closeFeedbackModal);
+      document.querySelectorAll('#feedback-stars [data-star]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          state.feedbackRating = Number(btn.getAttribute('data-star'));
+          document.querySelectorAll('#feedback-stars [data-star]').forEach((b) => {
+            const active = Number(b.getAttribute('data-star')) === state.feedbackRating;
+            b.className = `px-3 py-1.5 rounded-lg text-xs ${active ? 'btn-primary' : 'btn-secondary'}`;
+          });
+        });
+      });
+      document.getElementById('feedback-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const msgEl = document.getElementById('feedback-message');
+        const submitBtn = document.getElementById('feedback-submit-btn');
+        const message = msgEl.value.trim();
+        if (message.length < 3) return;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending…';
+        try {
+          await apiFetch('/api/feedback', {
+            method: 'POST',
+            body: JSON.stringify({ screen: state.appTab, rating: state.feedbackRating, message })
+          });
+          msgEl.value = '';
+          closeFeedbackModal();
+          showToast('Thank you! Pilot feedback received.');
+        } catch (err) {
+          showToast(err.message || 'Could not send feedback.');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Send feedback';
+        }
+      });
+
+      document.getElementById('waitlist-close-btn').addEventListener('click', closeWaitlistModal);
+      document.getElementById('waitlist-cancel-btn').addEventListener('click', closeWaitlistModal);
+      document.getElementById('waitlist-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const emailIn = document.getElementById('waitlist-email-input');
+        const submitBtn = document.getElementById('waitlist-submit-btn');
+        const email = emailIn.value.trim();
+        if (!email) return;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Joining…';
+        try {
+          await apiFetch('/api/waitlist', {
+            method: 'POST',
+            body: JSON.stringify({ email, tier: state.activeWaitlistTier })
+          });
+          state.waitlistMessage = `You are on the early-access list for ${state.activeWaitlistTier}.`;
+          emailIn.value = '';
+          closeWaitlistModal();
+          showToast(`Joined ${state.activeWaitlistTier} waitlist`);
+          render();
+        } catch (err) {
+          showToast(err.message || 'Could not join waitlist.');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Join waitlist';
+        }
+      });
+
+      // ----------------------------------------------------------------------
+      // SESSION BOOTSTRAP
+      // ----------------------------------------------------------------------
+      async function handleSignedInSession(session) {
+        state.session = session;
+        state.isAuthenticated = true;
+        state.userEmail = session.user ? session.user.email : '';
+        await loadUserWorkspace();
+        if (state.permissionsGranted) {
+          navigateTo('app', 'today');
+        } else {
+          navigateTo('permissions');
+        }
+      }
+
+      async function bootApp() {
+        render();
+        try {
+          if (supabaseClient) {
+            const { data } = await supabaseClient.auth.getSession();
+            if (data && data.session) {
+              state.session = data.session;
+              state.isAuthenticated = true;
+              state.userEmail = data.session.user ? data.session.user.email : '';
+              await loadUserWorkspace();
+            }
+
+            supabaseClient.auth.onAuthStateChange(async (event, session) => {
+              if (event === 'SIGNED_IN' && session && !state.isAuthenticated) {
+                await handleSignedInSession(session);
+              } else if (event === 'SIGNED_OUT') {
+                state.session = null;
+                state.isAuthenticated = false;
+                state.permissionsGranted = false;
+                state.records = [];
+              }
+            });
+          }
+        } catch (_) {
+          // Keep landing accessible even if config is not set yet
+        } finally {
+          state.booting = false;
+          syncFromHash();
+          render();
+        }
+      }
+
+      window.addEventListener('hashchange', () => {
+        syncFromHash();
+        render();
+      });
+
+      bootApp();
+    })();
+  </script>
+</body>
+</html>
